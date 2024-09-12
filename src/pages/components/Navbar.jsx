@@ -8,6 +8,7 @@ export default function Navbar() {
         { name: 'CSGPT', link: '/csgpt' },
         { name: 'Pricing', link: '/pricing' },
         { name: 'About', link: '/about' },
+        { name: 'Get Started', link: '/csgpt' },
     ];
 
     let [isOpen, setIsOpen] = useState(false);
@@ -51,9 +52,7 @@ export default function Navbar() {
                             <Link to={link.link}>{link.name}</Link>
                         </li>
                     ))}
-                    <button className="inline-flex h-12 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-4 md:mx-4 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50">
-                    <Link to="/csgpt">Get Started</Link>
-                    </button>
+                   
                 </ul>
             </div>
         </div>

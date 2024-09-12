@@ -4,7 +4,7 @@ import { StarsBackground } from "../components/ui/stars-background";
 import { Link } from "react-router-dom";
 export default function Hero() {
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800">
+    <div className="pt-[100px] relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800">
       <div className="absolute inset-0 z-0">
         <ShootingStars />
         <StarsBackground />
@@ -18,14 +18,48 @@ export default function Hero() {
           className="mb-8"
         />
         <h1 className="mb-4 text-6xl font-bold text-white sm:text-7xl md:text-8xl lg:text-9xl">
-          CSGPT
+        <span className='font-bold text-gray-400'>CS</span><span className='font-bold text-gray-600'>GPT</span>
         </h1>
         <p className="mb-8 max-w-2xl text-xl text-gray-300 sm:text-2xl">
           Search for anything
         </p>
-        <button className="inline-flex h-12 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-6 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50">
+        <button className="inline-flex h-12 p-2 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-6 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50">
           <Link to="/csgpt">Get Started</Link>
         </button>
+
+        <section className="relative z-10 py-16 px-4 text-center">
+        <h2 className="mb-8 text-4xl font-bold text-white">Key Features</h2>
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+          <div className="rounded-lg bg-neutral-800 bg-opacity-50 p-6">
+            <h3 className="mb-4 text-2xl font-semibold text-gray-300">Advanced Search</h3>
+            <p className="text-gray-400">Powerful search capabilities to find exactly what you need</p>
+          </div>
+          <div className="rounded-lg bg-neutral-800 bg-opacity-50 p-6">
+            <h3 className="mb-4 text-2xl font-semibold text-gray-300">AI-Powered</h3>
+            <p className="text-gray-400">Leveraging cutting-edge AI technology for intelligent results</p>
+          </div>
+          <div className="rounded-lg bg-neutral-800 bg-opacity-50 p-6">
+            <h3 className="mb-4 text-2xl font-semibold text-gray-300">User-Friendly</h3>
+            <p className="text-gray-400">Intuitive interface designed for ease of use</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="relative z-10 py-16 px-4 text-center">
+        <h2 className="mb-8 text-4xl font-bold text-white">About CSGPT</h2>
+        <p className="mx-auto max-w-2xl text-xl text-gray-300">
+          CSGPT is a revolutionary search platform that combines the power of AI with
+          comprehensive data analysis to provide you with the most accurate and relevant
+          search results. Our mission is to make information accessible and useful for everyone.
+        </p>
+      </section>
+      
+      <section className="relative z-10 py-16 px-4 text-center">
+        <h2 className="mb-8 text-4xl font-bold text-white">Ready to Get Started?</h2>
+        <button className="inline-flex h-12 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-6 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50">
+          <Link to="/csgpt">Try CSGPT Now</Link>
+        </button>
+      </section>
       </div>
     </div>
   )
