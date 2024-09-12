@@ -1,10 +1,13 @@
-
+import { ShootingStars } from "../components/ui/shooting-stars";
+import { StarsBackground } from "../components/ui/stars-background";
 export default function Pricing() {
   return (
-    <div className="flex justify-center items-center "style={{ height: 'calc(100vh - 64px)'}}>
-    <h1 className="font-bold text-5xl">
-        PRICING
-    </h1>
+    <div className="relative h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800">
+    <div className="absolute inset-0 z-0">
+      <ShootingStars />
+      <StarsBackground />
+    </div>
+     {/* Write from here */}
 </div>
   )
 }

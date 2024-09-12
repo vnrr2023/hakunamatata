@@ -11,22 +11,13 @@ import Pricing from './pages/Pricing';
 import Hero from './pages/Hero';
 
 function App() {
-  // const [loading, setLoading] = useState(true);
-
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     setLoading(false);
-  //   }, 3000);
-  // }, []);
 
   return (
     <>
-      {/* {loading && <Loaders />}
 
-      {!loading && ( */}
         <Router>
           <Navbar />
-          <div style={{ paddingTop: '64px' }}> 
+          <div> 
           <Routes>
             <Route path="/" element={<Hero />} />
             <Route path="/csgpt" element={<Csgpt />} />
