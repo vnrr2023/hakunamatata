@@ -11,7 +11,7 @@ export default function Hero() {
       </div>
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
         <img
-          src="src/assets/logo.png"
+          src="/src/assets/logo.png"
           alt="CSGPT Logo"
           width={200}
           height={200}
