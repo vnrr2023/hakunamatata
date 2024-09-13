@@ -1,11 +1,17 @@
 import React from "react";
 import { ShootingStars } from "../components/ui/shooting-stars";
 import { StarsBackground } from "../components/ui/stars-background";
+import { Spotlight } from "../components/ui/Spotlight";
+import { TextHoverEffect } from "../components/ui/text-hover-effect";
 import { Link } from "react-router-dom";
 export default function Hero() {
   return (
     <div className="pt-[100px] relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800">
       <div className="absolute inset-0 z-0">
+      <Spotlight
+        className="-top-40 left-0 md:left-80 md:-top-20"
+        fill="gray"
+      />
         <ShootingStars />
         <StarsBackground />
       </div>
@@ -15,11 +21,11 @@ export default function Hero() {
           alt="CSGPT Logo"
           width={200}
           height={200}
-          className="mb-8"
+          className="mt-8"
         />
-        <h1 className="mb-4 text-6xl font-bold text-white sm:text-7xl md:text-8xl lg:text-9xl">
-        <span className='font-bold text-gray-400'>CS</span><span className='font-bold text-gray-600'>GPT</span>
-        </h1>
+         <div className="h-[20rem] flex items-center justify-center">
+      <TextHoverEffect text="CSGPT" />
+    </div>
         <p className="mb-8 max-w-2xl text-xl text-gray-300 sm:text-2xl">
           Search for anything
         </p>
