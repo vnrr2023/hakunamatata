@@ -54,6 +54,8 @@ export const TextHoverEffect = ({
         <motion.radialGradient
           id="revealMask"
           gradientUnits="userSpaceOnUse"
+          cx="50%"
+          cy="50%"
           r="20%"
           animate={maskPosition}
           // example for a smoother animation below
