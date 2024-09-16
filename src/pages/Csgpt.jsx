@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ShootingStars } from "../components/ui/shooting-stars";
 import { StarsBackground } from "../components/ui/stars-background";
+import ReactMarkdown from 'react-markdown';
 import { Cover } from "../components/ui/cover";
 import { Link } from "react-router-dom";
 export default function Csgpt() {
@@ -32,7 +33,7 @@ export default function Csgpt() {
       });
 
       const data = await response.json();
-      const aiResponse = data.data || data.markdown_data || "No response received";
+      const aiResponse = data.markdown_data || "No response received";
       setMessages((prevMessages) => [...prevMessages, { type: "ai", content: aiResponse }]);
     } catch (error) {
       console.error("Error:", error);
@@ -43,21 +44,14 @@ export default function Csgpt() {
     }
   };
 
-  const renderMessage = (content) => {
-    if (content.startsWith('<p>') && content.endsWith('</p>')) {
-      return <div dangerouslySetInnerHTML={{ __html: content }} />;
-    }
-    return content;
-  };
-
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800 flex justify-center">
       <div className="absolute inset-0 z-0">
         <ShootingStars />
         <StarsBackground />
-        <div className="m-4">
-      <Cover><Link to="/"><span className='font-bold text-gray-400'>CS</span><span className='font-bold text-gray-600'>GPT</span></Link></Cover>
       </div>
+      <div className="m-4">
+      <Cover><Link to="/"><span className='font-bold text-gray-400'>CS</span><span className='font-bold text-gray-600'>GPT</span></Link></Cover>
       </div>
       <div className="relative z-10 w-full max-w-2xl flex flex-col mt-16">
         <div className="flex-grow overflow-y-auto p-4 space-y-6">
@@ -68,16 +62,40 @@ export default function Csgpt() {
             >
               {message.type === "ai" && (
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-transparent flex items-center justify-center mr-2">
-                  <img
-                  src="./logo.png"
-                  alt="CSGPT Logo"
-                  width={200}
-                  height={200}
-                />
+                   <img
+          src="./logo.png"
+          alt="CSGPT Logo"
+          width={200}
+          height={200}
+        />
                 </div>
               )}
               <div className={`max-w-[80%] text-white ${message.type === "user" ? "text-right" : "text-left"}`}>
-                {renderMessage(message.content)}
+                {message.type === "ai" ? (
+                  <ReactMarkdown
+                    components={{
+                      p: ({ node, ...props }) => <p className="mb-2" {...props} />,
+                      ul: ({ node, ...props }) => <ul className="list-disc pl-4 mb-2" {...props} />,
+                      ol: ({ node, ...props }) => <ol className="list-decimal pl-4 mb-2" {...props} />,
+                      li: ({ node, ...props }) => <li className="mb-1" {...props} />,
+                      h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mb-2" {...props} />,
+                      h2: ({ node, ...props }) => <h2 className="text-xl font-bold mb-2" {...props} />,
+                      h3: ({ node, ...props }) => <h3 className="text-lg font-bold mb-2" {...props} />,
+                      code: ({ node, inline, ...props }) => 
+                        inline ? (
+                          <code className="bg-gray-800 rounded px-1" {...props} />
+                        ) : (
+                          <pre className="bg-gray-800 rounded p-2 overflow-x-auto">
+                            <code {...props} />
+                          </pre>
+                        ),
+                    }}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
+                ) : (
+                  message.content
+                )}
               </div>
             </div>
           ))}
@@ -115,6 +133,7 @@ export default function Csgpt() {
           </div>
         </form>
       </div>
+
     </div>
   );
 }
