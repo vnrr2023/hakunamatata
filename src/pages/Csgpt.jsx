@@ -49,10 +49,11 @@ export default function Csgpt() {
       <div className="absolute inset-0 z-0">
         <ShootingStars />
         <StarsBackground />
-      </div>
-      <div className="m-4">
+        <div className="m-4">
       <Cover><Link to="/"><span className='font-bold text-gray-400'>CS</span><span className='font-bold text-gray-600'>GPT</span></Link></Cover>
       </div>
+      </div>
+      
       <div className="relative z-10 w-full max-w-2xl flex flex-col mt-16">
         <div className="flex-grow overflow-y-auto p-4 space-y-6">
           {messages.map((message, index) => (
