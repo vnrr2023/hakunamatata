@@ -24,7 +24,7 @@ export default function Csgpt() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("https://a60a-43-231-238-206.ngrok-free.app/query", {
+      const response = await fetch("https://e113-43-231-238-206.ngrok-free.app/query", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
