@@ -8,6 +8,7 @@ export default function Navbar() {
         { name: 'CSGPT', link: '/csgpt' },
         { name: 'Pricing', link: '/pricing' },
         { name: 'About', link: '/about' },
+        { name: 'Get Started', link: '/csgpt' },
     ];
 
     let [isOpen, setIsOpen] = useState(false);
@@ -51,9 +52,7 @@ export default function Navbar() {
                             <Link to={link.link}>{link.name}</Link>
                         </li>
                     ))}
-                    <Link to="/csgpt" className="btn bg-stone-600 text-white py-1 px-3 md:ml-8 rounded md:static ">
-                        Get Started
-                    </Link>
+                   
                 </ul>
             </div>
         </div>
