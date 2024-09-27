@@ -7,6 +7,7 @@ import Csgpt from './pages/Csgpt';
 import About from './pages/About';
 import Pricing from './pages/Pricing';
 import Hero from './pages/Hero';
+import SignUp from './pages/SignUp';
 
 function Layout() {
   const location = useLocation();
@@ -20,6 +21,7 @@ function Layout() {
           <Route path="/csgpt" element={<Csgpt />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/about" element={<About />} />
+          <Route path="/signup" element={<SignUp />} />
         </Routes>
       </main>
       {location.pathname !== '/csgpt' && <Footer />}
