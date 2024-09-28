@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { IconBrandGoogle } from "@tabler/icons-react"
-
+export const google_ngrok_url="https://940a-43-231-238-206.ngrok-free.app" 
 export default function SignUp() {
   useEffect(() => {
     google.accounts.id.initialize({
@@ -12,12 +12,12 @@ export default function SignUp() {
       { theme: "outline", size: "large" }
     )
   }, [])
-
+ 
   const handleCallbackResponse = (response) => {
     const formData = new FormData()
     formData.append("token", response.credential)
     console.log(response.credential)
-    fetch("https://your-backend-url.com/auth/google_login/", {
+    fetch(`${google_ngrok_url}/auth/google_login/`, {
       method: "POST",
       body: formData,  
     })
