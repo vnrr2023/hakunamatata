@@ -6,7 +6,7 @@ export default function Navbar() {
     const Links = [
         { name: 'Home', link: '/' },
         { name: 'CSGPT', link: '/csgpt' },
-        
+        { name: 'Get Started', link: '/csgpt' },
         { name: 'SignIn', link: '/signup' },
     ];
 
