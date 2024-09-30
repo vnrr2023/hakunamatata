@@ -9,6 +9,7 @@ export default function Navbar() {
         { name: 'Pricing', link: '/pricing' },
         { name: 'About', link: '/about' },
         { name: 'Get Started', link: '/csgpt' },
+        { name: 'SignIn', link: '/signup' },
     ];
 
     let [isOpen, setIsOpen] = useState(false);
