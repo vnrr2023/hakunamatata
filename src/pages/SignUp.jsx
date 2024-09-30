@@ -3,10 +3,11 @@ import { IconBrandGoogle } from "@tabler/icons-react"
 import { ShootingStars } from "../components/ui/shooting-stars"
 import { StarsBackground } from "../components/ui/stars-background"
 import { motion } from "framer-motion"
-
+import { useNavigate } from "react-router-dom";
 export const google_ngrok_url = "https://e48b-43-231-238-206.ngrok-free.app"
 
 export default function SignUp() {
+  const navigate = useNavigate()
   useEffect(() => {
     google.accounts.id.initialize({
       client_id: import.meta.env.VITE_GOOGLE_KEY,
@@ -29,7 +30,11 @@ export default function SignUp() {
       .then(res => res.json())
       .then(data => {
         console.log("Backend response: ", data)
-        localStorage.setItem("User", JSON.stringify(data))
+        localStorage.setItem("Token", JSON.stringify("Bearer "+data.access))
+        const user = localStorage.getItem("Token");
+        if (user) {
+          navigate("/csgpt") 
+        }
       })
       .catch(err => console.error("Error in Google login: ", err))
   }

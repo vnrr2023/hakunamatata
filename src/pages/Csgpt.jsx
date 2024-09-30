@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown'
 import { Cover } from "../components/ui/cover"
 import { Link } from "react-router-dom"
 import { ChevronDown } from "lucide-react"
-
+import { useNavigate } from "react-router-dom";
 export default function Csgpt() {
   const [userQuery, setUserQuery] = useState("")
   const [messages, setMessages] = useState([])
@@ -22,7 +22,14 @@ export default function Csgpt() {
     "Explain data link layer",
     "Explain OSI Layers"
   ]
-
+  const navigate = useNavigate()
+  useEffect(() => {
+    const user = localStorage.getItem("Token");
+    if (!user) {
+      navigate("/signup") // Redirect if no user is found
+    }
+  }, [navigate]) 
+  
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
