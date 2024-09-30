@@ -26,7 +26,7 @@ export default function Csgpt() {
   useEffect(() => {
     const user = localStorage.getItem("Token");
     if (!user) {
-      navigate("/signup") // Redirect if no user is found
+      navigate("/signup")
     }
   }, [navigate]) 
   
