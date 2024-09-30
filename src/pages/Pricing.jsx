@@ -1,35 +1,35 @@
-import { ShootingStars } from "../components/ui/shooting-stars"
-import { StarsBackground } from "../components/ui/stars-background"
-import { CheckIcon } from "lucide-react"
+// import { ShootingStars } from "../components/ui/shooting-stars"
+// import { StarsBackground } from "../components/ui/stars-background"
+// import { CheckIcon } from "lucide-react"
 
-const pricingPlans = [
-  {
-    name: "Basic",
-    price: "Free",
-    features: ["Limited searches", "Basic results", "Standard support"],
-    cta: "Get Started",
-    highlighted: false,
-  },
-  {
-    name: "Pro",
-    price: "$19",
-    features: ["Unlimited searches", "Advanced results", "Priority support", "Custom filters"],
-    cta: "Upgrade to Pro",
-    highlighted: true,
-  },
-  {
-    name: "Enterprise",
-    price: "Custom",
-    features: ["Dedicated support", "Custom integration", "Advanced analytics", "SLA guarantee"],
-    cta: "Contact Sales",
-    highlighted: false,
-  },
-]
+// const pricingPlans = [
+//   {
+//     name: "Basic",
+//     price: "Free",
+//     features: ["Limited searches", "Basic results", "Standard support"],
+//     cta: "Get Started",
+//     highlighted: false,
+//   },
+//   {
+//     name: "Pro",
+//     price: "$19",
+//     features: ["Unlimited searches", "Advanced results", "Priority support", "Custom filters"],
+//     cta: "Upgrade to Pro",
+//     highlighted: true,
+//   },
+//   {
+//     name: "Enterprise",
+//     price: "Custom",
+//     features: ["Dedicated support", "Custom integration", "Advanced analytics", "SLA guarantee"],
+//     cta: "Contact Sales",
+//     highlighted: false,
+//   },
+// ]
 
 export default function Pricing() {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800">
-      <div className="absolute inset-0 z-0">
+      {/* <div className="absolute inset-0 z-0">
         <ShootingStars />
         <StarsBackground />
       </div>
@@ -75,7 +75,7 @@ export default function Pricing() {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
     </div>
   )
 }
