@@ -84,18 +84,19 @@ export default function Csgpt() {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-
-        const chunk = decoder.decode(value)
-        setStreamingResponse(prev => prev + chunk)
+      const data = await response.json()
+      
+      if (data.server_status && data.data) {
+        // Simulate streaming for demonstration purposes
+        const words = data.data.split(' ')
+        for (let i = 0; i < words.length; i++) {
+          await new Promise(resolve => setTimeout(resolve, 50))
+          setStreamingResponse(prev => prev + words[i] + ' ')
+        }
+        setMessages(prevMessages => [...prevMessages, { type: "ai", content: data.data }])
+      } else {
+        throw new Error("Invalid response format")
       }
-
-      setMessages(prevMessages => [...prevMessages, { type: "ai", content: streamingResponse }])
     } catch (error) {
       console.error("Error:", error)
       let errorMessage = "Sorry, there was an error processing your request."
