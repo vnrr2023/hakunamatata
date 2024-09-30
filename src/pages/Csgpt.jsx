@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useRef, useEffect } from "react"
 import { ShootingStars } from "../components/ui/shooting-stars"
 import { StarsBackground } from "../components/ui/stars-background"
@@ -68,12 +70,42 @@ export default function Csgpt() {
         body: JSON.stringify({ "question": userQuery }),
       })
 
-      const data = await response.json()
-      const aiResponse = data.markdown_data || "No response received"
-      setMessages((prevMessages) => [...prevMessages, { type: "ai", content: aiResponse }])
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let aiResponse = ""
+
+      setMessages((prevMessages) => [...prevMessages, { type: "ai", content: "" }])
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const chunk = decoder.decode(value)
+        aiResponse += chunk
+
+        setMessages((prevMessages) => {
+          const newMessages = [...prevMessages]
+          newMessages[newMessages.length - 1].content = aiResponse
+          return newMessages
+        })
+      }
     } catch (error) {
       console.error("Error:", error)
-      setMessages((prevMessages) => [...prevMessages, { type: "error", content: "Sorry, there was an error processing your request." }])
+      let errorMessage = "Sorry, there was an error processing your request."
+      setMessages((prevMessages) => [...prevMessages, { type: "error", content: "" }])
+      
+      for (let i = 0; i < errorMessage.length; i++) {
+        await new Promise(resolve => setTimeout(resolve, 50))
+        setMessages((prevMessages) => {
+          const newMessages = [...prevMessages]
+          newMessages[newMessages.length - 1].content = errorMessage.slice(0, i + 1)
+          return newMessages
+        })
+      }
     } finally {
       setIsLoading(false)
       setUserQuery("")
@@ -85,7 +117,10 @@ export default function Csgpt() {
       <div className="absolute inset-0 z-0">
         <ShootingStars />
         <StarsBackground />
-        <div className="m-4">
+      </div>
+      
+      <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col h-screen">
+        <div className="flex justify-between items-center p-4">
           <Cover>
             <Link to="/">
               <span className="font-bold text-gray-400">CS</span>
@@ -93,9 +128,7 @@ export default function Csgpt() {
             </Link>
           </Cover>
         </div>
-      </div>
-      
-      <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col h-screen pt-20">
+
         <div className="flex-grow overflow-hidden flex flex-col">
           <div 
             ref={chatContainerRef} 
@@ -140,6 +173,8 @@ export default function Csgpt() {
                     >
                       {message.content}
                     </ReactMarkdown>
+                  ) : message.type === "error" ? (
+                    <span className="text-red-500">{message.content}</span>
                   ) : (
                     message.content
                   )}
@@ -166,9 +201,9 @@ export default function Csgpt() {
           </button>
         )}
 
-        <div className="p-4 w-full">
+        <div className="p-4 w-full bg-gradient-to-b from-transparent to-neutral-800">
           <form
-            className="flex flex-col items-center w-full"
+            className="flex flex-col items-center w-full max-w-4xl mx-auto"
             onSubmit={handleSubmit}
           >
             {isFirstTime && (
@@ -204,7 +239,7 @@ export default function Csgpt() {
                 </svg>
               </button>
             </div>
-            <span className="text-gray-400 mt-2">CSGPT can only give answers from relevant books.</span>
+            <span className="text-gray-400 mt-2 text-center">CSGPT can only give answers from relevant books.</span>
           </form>
         </div>
       </div>
