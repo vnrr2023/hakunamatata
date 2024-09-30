@@ -4,7 +4,7 @@ import { ShootingStars } from "../components/ui/shooting-stars"
 import { StarsBackground } from "../components/ui/stars-background"
 import { motion } from "framer-motion"
 
-export const google_ngrok_url = "https://940a-43-231-238-206.ngrok-free.app"
+export const google_ngrok_url = "https://e48b-43-231-238-206.ngrok-free.app"
 
 export default function SignUp() {
   useEffect(() => {
@@ -22,7 +22,7 @@ export default function SignUp() {
     const formData = new FormData()
     formData.append("token", response.credential)
     console.log(response.credential)
-    fetch(`${google_ngrok_url}/auth/google_login/`, {
+    fetch(`${google_ngrok_url}/auth/login/`, {
       method: "POST",
       body: formData,
     })
