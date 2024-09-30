@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown'
 import { Cover } from "../components/ui/cover"
 import { Link } from "react-router-dom"
 import { ChevronDown } from "lucide-react"
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"
 import { google_ngrok_url } from "./SignUp"
 
 export default function Csgpt() {
@@ -14,6 +14,7 @@ export default function Csgpt() {
   const [isLoading, setIsLoading] = useState(false)
   const [isFirstTime, setIsFirstTime] = useState(true)
   const [showScrollDown, setShowScrollDown] = useState(false)
+  const [streamingResponse, setStreamingResponse] = useState("")
   const messagesEndRef = useRef(null)
   const chatContainerRef = useRef(null)
   const textareaRef = useRef(null)
@@ -25,18 +26,19 @@ export default function Csgpt() {
     "Explain OSI Layers"
   ]
   const navigate = useNavigate()
+  
   useEffect(() => {
-    const user = localStorage.getItem("Token");
+    const user = localStorage.getItem("Token")
     if (!user) {
       navigate("/signup")
     }
-  }, [navigate]) 
+  }, [navigate])
   
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
-  useEffect(scrollToBottom, [messages])
+  useEffect(scrollToBottom, [messages, streamingResponse])
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -67,6 +69,7 @@ export default function Csgpt() {
     setMessages((prevMessages) => [...prevMessages, { type: "user", content: userQuery }])
     setIsLoading(true)
     setIsFirstTime(false)
+    setStreamingResponse("")
     
     try {
       const response = await fetch(`${google_ngrok_url}/app/query/`, {
@@ -81,13 +84,18 @@ export default function Csgpt() {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const data = await response.json()
-      
-      if (data.server_status && data.data) {
-        setMessages((prevMessages) => [...prevMessages, { type: "ai", content: data.data }])
-      } else {
-        throw new Error("Invalid response format")
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const chunk = decoder.decode(value)
+        setStreamingResponse(prev => prev + chunk)
       }
+
+      setMessages(prevMessages => [...prevMessages, { type: "ai", content: streamingResponse }])
     } catch (error) {
       console.error("Error:", error)
       let errorMessage = "Sorry, there was an error processing your request."
@@ -95,8 +103,10 @@ export default function Csgpt() {
     } finally {
       setIsLoading(false)
       setUserQuery("")
+      setStreamingResponse("")
     }
   }
+
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800 flex flex-col">
       <div className="absolute inset-0 z-0">
@@ -166,6 +176,41 @@ export default function Csgpt() {
                 </div>
               </div>
             ))}
+            {streamingResponse && (
+              <div className="flex items-start justify-start">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-transparent flex items-center justify-center mr-2">
+                  <img
+                    src="/logo.png"
+                    alt="CSGPT Logo"
+                    width={32}
+                    height={32}
+                  />
+                </div>
+                <div className="max-w-[85%] text-white text-left">
+                  <ReactMarkdown
+                    components={{
+                      p: ({ node, ...props }) => <p className="mb-2" {...props} />,
+                      ul: ({ node, ...props }) => <ul className="list-disc pl-4 mb-2" {...props} />,
+                      ol: ({ node, ...props }) => <ol className="list-decimal pl-4 mb-2" {...props} />,
+                      li: ({ node, ...props }) => <li className="mb-1" {...props} />,
+                      h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mb-2" {...props} />,
+                      h2: ({ node, ...props }) => <h2 className="text-xl font-bold mb-2" {...props} />,
+                      h3: ({ node, ...props }) => <h3 className="text-lg font-bold mb-2" {...props} />,
+                      code: ({ node, inline, ...props }) => 
+                        inline ? (
+                          <code className="bg-gray-800 rounded px-1" {...props} />
+                        ) : (
+                          <pre className="bg-gray-800 rounded p-2 overflow-x-auto">
+                            <code {...props} />
+                          </pre>
+                        ),
+                    }}
+                  >
+                    {streamingResponse}
+                  </ReactMarkdown>
+                </div>
+              </div>
+            )}
             {isLoading && (
               <div className="flex justify-center items-center space-x-2">
                 <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
