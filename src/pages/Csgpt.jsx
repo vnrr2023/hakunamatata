@@ -67,7 +67,7 @@ export default function Csgpt() {
     setMessages((prevMessages) => [...prevMessages, { type: "user", content: userQuery }])
     setIsLoading(true)
     setIsFirstTime(false)
-
+    
     try {
       const response = await fetch(`${google_ngrok_url}/app/query/`, {
         method: "POST",
@@ -81,44 +81,22 @@ export default function Csgpt() {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-      let aiResponse = ""
-
-      setMessages((prevMessages) => [...prevMessages, { type: "ai", content: "" }])
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-
-        const chunk = decoder.decode(value)
-        aiResponse += chunk
-
-        setMessages((prevMessages) => {
-          const newMessages = [...prevMessages]
-          newMessages[newMessages.length - 1].content = aiResponse
-          return newMessages
-        })
+      const data = await response.json()
+      
+      if (data.server_status && data.data) {
+        setMessages((prevMessages) => [...prevMessages, { type: "ai", content: data.data }])
+      } else {
+        throw new Error("Invalid response format")
       }
     } catch (error) {
       console.error("Error:", error)
       let errorMessage = "Sorry, there was an error processing your request."
-      setMessages((prevMessages) => [...prevMessages, { type: "error", content: "" }])
-      
-      for (let i = 0; i < errorMessage.length; i++) {
-        await new Promise(resolve => setTimeout(resolve, 20))
-        setMessages((prevMessages) => {
-          const newMessages = [...prevMessages]
-          newMessages[newMessages.length - 1].content = errorMessage.slice(0, i + 1)
-          return newMessages
-        })
-      }
+      setMessages((prevMessages) => [...prevMessages, { type: "error", content: errorMessage }])
     } finally {
       setIsLoading(false)
       setUserQuery("")
     }
   }
-
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800 flex flex-col">
       <div className="absolute inset-0 z-0">
