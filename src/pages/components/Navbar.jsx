@@ -136,12 +136,11 @@ export default function Navbar() {
                 </div>
             </div>
 
-            {/* Logout Confirmation Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-8 max-w-sm w-full">
-                        <h2 className="text-2xl font-bold mb-4">Confirm Logout</h2>
-                        <p className="mb-6">Are you sure you want to log out?</p>
+                <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+                    <div className="bg-black bg-opacity-80 rounded-lg p-8 max-w-sm w-full">
+                        <h2 className="text-2xl text-white font-bold mb-4">Confirm SignOut</h2>
+                        <p className="text-white mb-6">Are you sure you want to Sign Out?</p>
                         <div className="flex justify-end space-x-4">
                             <button
                                 onClick={() => setShowModal(false)}
@@ -153,7 +152,7 @@ export default function Navbar() {
                                 onClick={confirmLogout}
                                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                             >
-                                Logout
+                                SignOut
                             </button>
                         </div>
                     </div>
