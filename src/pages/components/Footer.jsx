@@ -7,12 +7,7 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row justify-between items-center">
           <nav className="flex flex-wrap justify-center sm:justify-start gap-6 mb-4 sm:mb-0">
-            <Link to="/about" className="hover:text-gray-800 transition-colors">
-              About Us
-            </Link>
-            <Link to="/pricing" className="hover:text-gray-800 transition-colors">
-              Pricing
-            </Link>
+            
             <Link to="/csgpt" className="hover:text-gray-800 transition-colors">
               CSGPT
             </Link>
