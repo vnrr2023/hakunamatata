@@ -22,7 +22,7 @@ export default function SignUp() {
     const formData = new FormData()
     formData.append("token", response.credential)
     console.log(response.credential)
-    fetch(`${google_ngrok_url}/auth/login/`, {
+    fetch(`${google_ngrok_url}/app/auth/login/`, {
       method: "POST",
       body: formData,
     })
