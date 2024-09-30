@@ -6,6 +6,8 @@ import { Cover } from "../components/ui/cover"
 import { Link } from "react-router-dom"
 import { ChevronDown } from "lucide-react"
 import { useNavigate } from "react-router-dom";
+import { google_ngrok_url } from "./SignUp"
+
 export default function Csgpt() {
   const [userQuery, setUserQuery] = useState("")
   const [messages, setMessages] = useState([])
@@ -67,7 +69,7 @@ export default function Csgpt() {
     setIsFirstTime(false)
 
     try {
-      const response = await fetch("https://0c29-43-231-238-206.ngrok-free.app/app/query/", {
+      const response = await fetch(`${google_ngrok_url}/app/query/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -104,7 +106,7 @@ export default function Csgpt() {
       setMessages((prevMessages) => [...prevMessages, { type: "error", content: "" }])
       
       for (let i = 0; i < errorMessage.length; i++) {
-        await new Promise(resolve => setTimeout(resolve, 50))
+        await new Promise(resolve => setTimeout(resolve, 20))
         setMessages((prevMessages) => {
           const newMessages = [...prevMessages]
           newMessages[newMessages.length - 1].content = errorMessage.slice(0, i + 1)
