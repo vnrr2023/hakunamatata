@@ -4,41 +4,108 @@ import { StarsBackground } from "../components/ui/stars-background"
 import ReactMarkdown from 'react-markdown'
 import { Cover } from "../components/ui/cover"
 import { Link } from "react-router-dom"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, Download, Trash2, Send } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-import { google_ngrok_url } from "./SignUp"
+import { pdf, Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
+
+Font.register({
+  family: 'Roboto',
+  src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-light-webfont.ttf'
+})
+
+const styles = StyleSheet.create({
+  page: { 
+    padding: 30,
+    backgroundColor: '#f0f8ff',
+    fontFamily: 'Roboto',
+  },
+  title: { 
+    fontSize: 24, 
+    marginBottom: 20, 
+    textAlign: 'center',
+    color: '#333',
+  },
+  questionAnswer: {
+    marginBottom: 20,
+    borderBottom: 1,
+    borderBottomColor: '#ccc',
+    paddingBottom: 10,
+  },
+  question: { 
+    fontSize: 14, 
+    marginTop: 10, 
+    fontWeight: 'bold',
+    color: '#4a90e2',
+  },
+  answerContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginTop: 5,
+  },
+  logo: {
+    width: 20,
+    height: 20,
+    marginRight: 10,
+  },
+  answer: { 
+    fontSize: 12, 
+    color: '#333',
+    flex: 1,
+  },
+  footer: {
+    position: 'absolute',
+    bottom: 30,
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+    color: '#888',
+    fontSize: 10,
+  },
+})
 
 export default function Csgpt() {
   const [userQuery, setUserQuery] = useState("")
   const [messages, setMessages] = useState([])
   const [isLoading, setIsLoading] = useState(false)
-  const [isFirstTime, setIsFirstTime] = useState(true)
+  const [isDownloading, setIsDownloading] = useState(false)
+  const [showSuggestions, setShowSuggestions] = useState(true)
   const [showScrollDown, setShowScrollDown] = useState(false)
-  const [streamingResponse, setStreamingResponse] = useState("")
   const messagesEndRef = useRef(null)
   const chatContainerRef = useRef(null)
   const textareaRef = useRef(null)
 
   const suggestions = [
-    "What is DBMS?",
+    "What is DNS? with text diagram.",
     "What is computer science?",
     "Explain data link layer",
     "Explain OSI Layers"
   ]
-  const navigate = useNavigate()
+  const router = useNavigate()
   
   useEffect(() => {
-    const user = localStorage.getItem("Token")
+    const user = sessionStorage.getItem("Token")
     if (!user) {
-      navigate("/signup")
+      router("/signup")
     }
-  }, [navigate])
+    
+    const storedMessages = sessionStorage.getItem('chatHistory')
+    if (storedMessages) {
+      const parsedMessages = JSON.parse(storedMessages)
+      setMessages(parsedMessages)
+      setShowSuggestions(parsedMessages.length === 0)
+    }
+  }, [router])
   
+  useEffect(() => {
+    sessionStorage.setItem('chatHistory', JSON.stringify(messages))
+    setShowSuggestions(messages.length === 0)
+  }, [messages])
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
-  useEffect(scrollToBottom, [messages, streamingResponse])
+  useEffect(scrollToBottom, [messages])
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -65,34 +132,31 @@ export default function Csgpt() {
   const handleSubmit = async (event) => {
     event.preventDefault()
     if (!userQuery.trim()) return
-
+  
     setMessages((prevMessages) => [...prevMessages, { type: "user", content: userQuery }])
     setIsLoading(true)
-    setIsFirstTime(false)
-    setStreamingResponse("")
-    
+    setShowSuggestions(false)
+    const token = sessionStorage.getItem("Token")
+  
     try {
       const response = await fetch(`${google_ngrok_url}/app/query/`, {
         method: "POST",
         headers: {
+          "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ "question": userQuery }),
+        body: JSON.stringify({ 
+          "question": userQuery
+        }),
       })
-
+  
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-
+  
       const data = await response.json()
       
       if (data.server_status && data.data) {
-        // Simulate streaming for demonstration purposes
-        const words = data.data.split(' ')
-        for (let i = 0; i < words.length; i++) {
-          await new Promise(resolve => setTimeout(resolve, 50))
-          setStreamingResponse(prev => prev + words[i] + ' ')
-        }
         setMessages(prevMessages => [...prevMessages, { type: "ai", content: data.data }])
       } else {
         throw new Error("Invalid response format")
@@ -104,8 +168,60 @@ export default function Csgpt() {
     } finally {
       setIsLoading(false)
       setUserQuery("")
-      setStreamingResponse("")
     }
+  }
+
+  const handleDownload = async () => {
+    setIsDownloading(true)
+  
+    const history = messages.reduce((acc, message, index, array) => {
+      if (message.type === "user") {
+        acc.push({
+          question: message.content,
+          answer: array[index + 1]?.content || ""
+        })
+      }
+      return acc
+    }, [])
+  
+    const MyDocument = () => (
+      <Document>
+        <Page size="A4" style={styles.page}>
+          <Text style={styles.title}>CSGPT Chat History</Text>
+          {history.map((item, index) => (
+            <View key={index} style={styles.questionAnswer}>
+              <Text style={styles.question}>Q: {item.question}</Text>
+              <View style={styles.answerContainer}>
+                <Text style={styles.answer}>A: {item.answer}</Text>
+              </View>
+            </View>
+          ))}
+          <Text style={styles.footer}>This response is generated by CSGPT</Text>
+        </Page>
+      </Document>
+    )
+  
+    try {
+      const blob = await pdf(<MyDocument />).toBlob()
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'csgpt-chat-history.pdf'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error("Error generating PDF:", error)
+      alert("There was an error generating the PDF. Please try again.")
+    } finally {
+      setIsDownloading(false)
+    }
+  }
+  const handleClearChat = () => {
+    setMessages([])
+    sessionStorage.removeItem('chatHistory')
+    setShowSuggestions(true)
   }
 
   return (
@@ -123,6 +239,16 @@ export default function Csgpt() {
               <span className="font-bold text-gray-600">GPT</span>
             </Link>
           </Cover>
+          {messages.length > 0 && (
+            <button
+              onClick={handleDownload}
+              disabled={isDownloading}
+              className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-md flex items-center transition-colors duration-200 ease-in-out"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              {isDownloading ? 'Downloading...' : 'Save as PDF'}
+            </button>
+          )}
         </div>
 
         <div className="flex-grow overflow-hidden flex flex-col">
@@ -177,41 +303,6 @@ export default function Csgpt() {
                 </div>
               </div>
             ))}
-            {streamingResponse && (
-              <div className="flex items-start justify-start">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-transparent flex items-center justify-center mr-2">
-                  <img
-                    src="/logo.png"
-                    alt="CSGPT Logo"
-                    width={32}
-                    height={32}
-                  />
-                </div>
-                <div className="max-w-[85%] text-white text-left">
-                  <ReactMarkdown
-                    components={{
-                      p: ({ node, ...props }) => <p className="mb-2" {...props} />,
-                      ul: ({ node, ...props }) => <ul className="list-disc pl-4 mb-2" {...props} />,
-                      ol: ({ node, ...props }) => <ol className="list-decimal pl-4 mb-2" {...props} />,
-                      li: ({ node, ...props }) => <li className="mb-1" {...props} />,
-                      h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mb-2" {...props} />,
-                      h2: ({ node, ...props }) => <h2 className="text-xl font-bold mb-2" {...props} />,
-                      h3: ({ node, ...props }) => <h3 className="text-lg font-bold mb-2" {...props} />,
-                      code: ({ node, inline, ...props }) => 
-                        inline ? (
-                          <code className="bg-gray-800 rounded px-1" {...props} />
-                        ) : (
-                          <pre className="bg-gray-800 rounded p-2 overflow-x-auto">
-                            <code {...props} />
-                          </pre>
-                        ),
-                    }}
-                  >
-                    {streamingResponse}
-                  </ReactMarkdown>
-                </div>
-              </div>
-            )}
             {isLoading && (
               <div className="flex justify-center items-center space-x-2">
                 <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
@@ -237,7 +328,7 @@ export default function Csgpt() {
             className="flex flex-col items-center w-full max-w-4xl mx-auto"
             onSubmit={handleSubmit}
           >
-            {isFirstTime && (
+            {showSuggestions && (
               <div className="flex flex-wrap justify-center gap-2 mb-4 w-full">
                 {suggestions.map((suggestion, index) => (
                   <button
@@ -251,23 +342,31 @@ export default function Csgpt() {
                 ))}
               </div>
             )}
-            <div className="relative w-full">
+            <div className="relative w-full flex items-center">
+              <div className="absolute left-2 flex space-x-2">
+                <button
+                  type="button"
+                  onClick={handleClearChat}
+                  className="text-gray-400 hover:text-white transition-colors duration-200"
+                  title="Clear chat"
+                >
+                  <Trash2 size={20} />
+                </button>
+              </div>
               <textarea
                 ref={textareaRef}
                 value={userQuery}
                 onChange={(e) => setUserQuery(e.target.value)}
-                className="w-full p-3 pr-12 rounded-md text-white bg-transparent border border-white border-opacity-30 focus:outline-none focus:ring-1 focus:ring-white focus:ring-opacity-50 resize-none overflow-hidden"
+                className="w-full p-3 pl-12 pr-12 rounded-md text-white bg-transparent border border-white border-opacity-30 focus:outline-none focus:ring-1 focus:ring-white focus:ring-opacity-50 resize-none overflow-hidden"
                 placeholder="Ask me anything..."
                 rows={1}
               />
               <button
                 type="submit"
-                className="absolute right-3 bottom-3 bg-transparent text-white p-1 rounded-md focus:outline-none"
+                className="absolute right-3 text-white p-1 rounded-md focus:outline-none hover:text-gray-300 transition-colors duration-200"
                 disabled={isLoading}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                  <path d="M13 5.41V21a1 1 0 0 1-2 0V5.41l-5.3 5.3a1 1 0 1 1-1.4-1.42l7-7a1 1 0 0 1 1.4 0l7 7a1 1 0 1 1-1.4 1.42L13 5.41z" />
-                </svg>
+                <Send size={20} />
               </button>
             </div>
             <span className="text-gray-400 mt-2 text-center">CSGPT can only give answers from relevant books.</span>

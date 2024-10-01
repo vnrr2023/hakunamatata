@@ -4,7 +4,7 @@ import { ShootingStars } from "../components/ui/shooting-stars"
 import { StarsBackground } from "../components/ui/stars-background"
 import { motion } from "framer-motion"
 import { useNavigate } from "react-router-dom";
-export const google_ngrok_url = "https://e48b-43-231-238-206.ngrok-free.app"
+export const google_ngrok_url = "https://bc80-43-231-238-206.ngrok-free.app"
 
 export default function SignUp() {
   const navigate = useNavigate()
@@ -30,7 +30,8 @@ export default function SignUp() {
       .then(res => res.json())
       .then(data => {
         console.log("Backend response: ", data)
-        localStorage.setItem("Token", JSON.stringify("Bearer "+data.access))
+        localStorage.setItem("Token", data.access)
+        console.log(data.access)
         const user = localStorage.getItem("Token");
         if (user) {
           navigate("/csgpt") 

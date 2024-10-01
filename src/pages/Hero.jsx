@@ -5,25 +5,55 @@ import { Spotlight } from "../components/ui/Spotlight";
 import { TextHoverEffect } from "../components/ui/text-hover-effect";
 import { Link } from "react-router-dom";
 import { FaStar, FaSearch, FaRobot, FaUser } from 'react-icons/fa';
+import { google_ngrok_url } from "./SignUp";
+import { useNavigate } from "react-router-dom";
 
 export default function Hero() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [feedback, setFeedback] = useState("");
-  const [rating, setRating] = useState(0);
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [feedback, setFeedback] = useState('')
+  const [rating, setRating] = useState('0')
+  const navigate = useNavigate()
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Here you would typically send the feedback to your server
-    console.log({ name, email, feedback, rating });
-    // Reset form
-    setName("");
-    setEmail("");
-    setFeedback("");
-    setRating(0);
-    alert("Thank you for your feedback!");
-  };
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    const token =localStorage.getItem("Token")
 
+    if (!token) {
+      alert('Unauthorized. Please sign in.')
+      navigate('/signup')
+      return
+    }
+    console.log(token)
+    const myHeaders = new Headers();
+    myHeaders.append("Authorization", `Bearer ${token}`);
+    myHeaders.append('Content-Type',"application/json");
+
+    const jsonData = {
+      name: name,
+      email: email,
+      stars: rating,
+      feedback: feedback,
+    };
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: JSON.stringify(jsonData),
+      redirect: "follow"
+    };
+
+fetch(`${google_ngrok_url}/app/take_review/`, requestOptions)
+  .then((response) => response.text())
+  .then((result) => console.log(result));
+
+      setName('')
+      setEmail('')
+      setFeedback('')
+      setRating('0')
+      alert('Thank you for your feedback!')
+    
+  }
   return (
     <div className="pt-[50px] relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800">
       <div className="absolute inset-0 z-0">
@@ -152,7 +182,7 @@ export default function Hero() {
             <div>
               <label className="block text-left text-gray-300 mb-2">Rating</label>
               <div className="flex justify-center space-x-2">
-                {[1, 2, 3, 4, 5].map((star) => (
+                {["1", "2", "3", "4", "5"].map((star) => (
                   <button
                     key={star}
                     type="button"
