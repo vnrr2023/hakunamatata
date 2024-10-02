@@ -305,7 +305,8 @@ export default function Csgpt() {
       return
     }
   
-    setMessages((prevMessages) => [...prevMessages, { type: "user", content: userQuery }])
+    const currentQuery = userQuery
+    setMessages((prevMessages) => [...prevMessages, { type: "user", content: currentQuery }])
     setIsLoading(true)
     setShowSuggestions(false)
     const token = localStorage.getItem("Token")
@@ -318,7 +319,7 @@ export default function Csgpt() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ 
-          "question": userQuery
+          "question": currentQuery
         }),
       })
   
@@ -328,7 +329,15 @@ export default function Csgpt() {
   
       const data = await response.json()
   
-      if (data.server_status && data.data) {
+      if (!data || typeof data !== 'object') {
+        throw new Error("Invalid response format: Response is not an object")
+      }
+  
+      if (!data.hasOwnProperty('server_status') || !data.hasOwnProperty('data')) {
+        throw new Error("Invalid response format: Missing required fields")
+      }
+  
+      if (data.server_status && typeof data.data === 'string') {
         const words = data.data.split(' ')
         let aiResponse = ""
         setMessages(prevMessages => [...prevMessages, { type: "ai", content: aiResponse }])
@@ -343,11 +352,11 @@ export default function Csgpt() {
           })
         }
       } else {
-        throw new Error("Invalid response format")
+        throw new Error("Invalid response format: Unexpected data structure")
       }
     } catch (error) {
       console.error("Error:", error)
-      let errorMessage = "Sorry, there was an error processing your request."
+      let errorMessage = `Sorry, there was an error processing your request: ${error.message}`
       setMessages((prevMessages) => [...prevMessages, { type: "error", content: errorMessage }])
     } finally {
       setIsLoading(false)
