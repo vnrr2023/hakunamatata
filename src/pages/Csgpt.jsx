@@ -83,7 +83,7 @@ export default function Csgpt() {
   const router = useNavigate()
   
   useEffect(() => {
-    const user = sessionStorage.getItem("Token")
+    const user = localStorage.getItem("Token")
     if (!user) {
       router("/signup")
     }
