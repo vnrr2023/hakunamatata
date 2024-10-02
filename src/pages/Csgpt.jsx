@@ -88,16 +88,9 @@ export default function Csgpt() {
       router("/signup")
     }
     
-    const storedMessages = sessionStorage.getItem('chatHistory')
-    if (storedMessages) {
-      const parsedMessages = JSON.parse(storedMessages)
-      setMessages(parsedMessages)
-      setShowSuggestions(parsedMessages.length === 0)
-    }
   }, [router])
   
   useEffect(() => {
-    sessionStorage.setItem('chatHistory', JSON.stringify(messages))
     setShowSuggestions(messages.length === 0)
   }, [messages])
 
@@ -136,7 +129,7 @@ export default function Csgpt() {
     setMessages((prevMessages) => [...prevMessages, { type: "user", content: userQuery }])
     setIsLoading(true)
     setShowSuggestions(false)
-    const token = sessionStorage.getItem("Token")
+    const token = localStorage.getItem("Token")
   
     try {
       const response = await fetch(`${google_ngrok_url}/app/query/`, {
@@ -220,7 +213,6 @@ export default function Csgpt() {
   }
   const handleClearChat = () => {
     setMessages([])
-    sessionStorage.removeItem('chatHistory')
     setShowSuggestions(true)
   }
 
