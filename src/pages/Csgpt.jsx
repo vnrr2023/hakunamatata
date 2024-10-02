@@ -121,7 +121,6 @@ export default function Csgpt() {
       return () => chatContainer.removeEventListener('scroll', checkScroll)
     }
   }, [])
-
   const handleSubmit = async (event) => {
     event.preventDefault()
     if (!userQuery.trim()) return
@@ -147,24 +146,24 @@ export default function Csgpt() {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
   
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
+      const data = await response.json()
   
-      let aiResponse = ""
-      setMessages(prevMessages => [...prevMessages, { type: "ai", content: aiResponse }])
+      if (data.server_status && data.data) {
+        const words = data.data.split(' ')
+        let aiResponse = ""
+        setMessages(prevMessages => [...prevMessages, { type: "ai", content: aiResponse }])
   
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-  
-        const chunk = decoder.decode(value, { stream: true })
-        aiResponse += chunk
-  
-        setMessages(prevMessages => {
-          const newMessages = [...prevMessages]
-          newMessages[newMessages.length - 1] = { type: "ai", content: aiResponse }
-          return newMessages
-        })
+        for (let i = 0; i < words.length; i++) {
+          await new Promise(resolve => setTimeout(resolve, 50)) // Delay between words
+          aiResponse += words[i] + ' '
+          setMessages(prevMessages => {
+            const newMessages = [...prevMessages]
+            newMessages[newMessages.length - 1] = { type: "ai", content: aiResponse.trim() }
+            return newMessages
+          })
+        }
+      } else {
+        throw new Error("Invalid response format")
       }
     } catch (error) {
       console.error("Error:", error)
