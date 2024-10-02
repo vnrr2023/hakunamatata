@@ -7,7 +7,7 @@ import { Link } from "react-router-dom"
 import { ChevronDown, Download, Trash2, Send } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { pdf, Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
-
+import { google_ngrok_url } from "./SignUp"
 Font.register({
   family: 'Roboto',
   src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-light-webfont.ttf'

@@ -102,9 +102,11 @@ export default function Hero() {
         <p className="mb-6 max-w-2xl text-lg text-gray-300 sm:text-xl">
           Search for anything with the power of AI
         </p>
+        <Link to="/csgpt">
         <button className="inline-flex h-12 p-2 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-6 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50 hover:bg-slate-800">
-          <Link to="/csgpt">Get Started</Link>
+          Get Started
         </button>
+        </Link>
 
         <div className="w-full max-w-4xl mx-auto mt-12 p-6 rounded-lg shadow-lg relative overflow-hidden">
           <div className="mb-12"><h3 className="text-4xl font-bold text-white px-3">SUPPORTED SUBJECTS</h3></div>  
