@@ -53,6 +53,183 @@ const styles = StyleSheet.create({
     fontSize: 10,
   },
 })
+
+const Header = ({ messages, handleDownload, isDownloading }) => (
+  <div className="flex justify-between items-center p-4">
+    <Link to="/">
+      <Cover>
+        <span className="font-bold text-gray-400">CS</span>
+        <span className="font-bold text-gray-600">GPT</span>
+      </Cover>
+    </Link>
+    {messages.length > 0 && (
+      <button
+        onClick={handleDownload}
+        disabled={isDownloading}
+        className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-md flex items-center transition-colors duration-200 ease-in-out"
+      >
+        <Download className="mr-2 h-4 w-4" />
+        {isDownloading ? 'Downloading...' : 'Save as PDF'}
+      </button>
+    )}
+  </div>
+)
+
+const ChatMessage = ({ message, handleCopy }) => (
+  <div className={`flex items-start ${message.type === "user" ? "justify-end" : "justify-start"}`}>
+    {message.type === "ai" && (
+      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-transparent flex items-center justify-center mr-2">
+        <img src="/logo.png" alt="CSGPT Logo" width={32} height={32} />
+      </div>
+    )}
+    <div className={`max-w-[85%] text-white ${message.type === "user" ? "text-right" : "text-left"}`}>
+      {message.type === "ai" ? (
+        <ReactMarkdown
+          components={{
+            p: ({ node, ...props }) => <p className="mb-2" {...props} />,
+            ul: ({ node, ...props }) => <ul className="list-disc pl-4 mb-2" {...props} />,
+            ol: ({ node, ...props }) => <ol className="list-decimal pl-4 mb-2" {...props} />,
+            li: ({ node, ...props }) => <li className="mb-1" {...props} />,
+            h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mb-2" {...props} />,
+            h2: ({ node, ...props }) => <h2 className="text-xl font-bold mb-2" {...props} />,
+            h3: ({ node, ...props }) => <h3 className="text-lg font-bold mb-2" {...props} />,
+            code: ({ node, inline, ...props }) => 
+              inline ? (
+                <code className="bg-gray-800 rounded px-1" {...props} />
+              ) : (
+                <pre className="bg-gray-800 rounded p-2 overflow-x-auto">
+                  <code {...props} />
+                </pre>
+              ),
+          }}
+        >
+          {message.content}
+        </ReactMarkdown>
+      ) : message.type === "error" ? (
+        <span className="text-red-500">{message.content}</span>
+      ) : (
+        message.content
+      )}
+    </div>
+    <button
+      onClick={() => handleCopy(message.content)}
+      className="ml-2 text-gray-400 hover:text-white transition-colors duration-200"
+      title="Copy to clipboard"
+    >
+      <Copy size={16} />
+    </button>
+  </div>
+)
+
+const ChatInput = ({ userQuery, setUserQuery, handleSubmit, handleClearChat, lineCount, isLoading, isMobile }) => {
+  const textareaRef = useRef(null)
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      const newHeight = Math.min(textareaRef.current.scrollHeight, window.innerHeight / 4)
+      textareaRef.current.style.height = `${newHeight}px`
+      
+      // Focus the textarea
+      textareaRef.current.focus()
+    }
+  }, [userQuery])
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault()
+      handleSubmitAndClear(event)
+    }
+  }
+
+  const handleSubmitAndClear = (event) => {
+    event.preventDefault()
+    handleSubmit(event)
+    setUserQuery('')  // Clear the textarea immediately after submission
+  }
+
+  return (
+    <div className="relative w-full">
+      <textarea
+        ref={textareaRef}
+        value={userQuery}
+        onChange={(e) => setUserQuery(e.target.value)}
+        onKeyDown={handleKeyDown}
+        className="w-full p-3 pb-12 rounded-md text-white bg-transparent border border-white border-opacity-30 focus:outline-none focus:ring-1 focus:ring-white focus:ring-opacity-50 resize-none overflow-y-auto scrollbar-hide"
+        placeholder="Ask me anything..."
+        rows={1}
+        style={{
+          maxHeight: 'calc(50vh - 40px)',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none'
+        }}
+      />
+      <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center bg-neutral-800 p-2 rounded-md">
+        <button
+          type="button"
+          onClick={handleClearChat}
+          className="text-gray-400 hover:text-white transition-colors duration-200"
+          title="Clear chat"
+        >
+          <Trash2 size={20} />
+        </button>
+        <span className={`text-sm ${lineCount > 100 ? 'text-red-500' : 'text-gray-400'}`}>
+          {lineCount}/100
+        </span>
+        <button
+          type="submit"
+          className="text-white p-1 rounded-md focus:outline-none hover:text-gray-300 transition-colors duration-200"
+          disabled={isLoading}
+          onClick={handleSubmitAndClear}
+        >
+          <Send size={20} />
+        </button>
+      </div>
+    </div>
+  )
+}
+const Suggestions = ({ suggestions, setUserQuery }) => {
+  const handleSuggestionClick = (suggestion) => {
+    setUserQuery(suggestion)
+    document.activeElement.blur()
+  }
+
+  return (
+    <div className="flex flex-wrap justify-center gap-2 mb-4 w-full">
+      {suggestions.map((suggestion, index) => (
+        <button
+          key={index}
+          className="bg-gray-700 bg-opacity-50 text-white px-3 py-1 rounded-md text-sm hover:bg-opacity-75 transition-colors focus:outline-none"
+          onClick={() => handleSuggestionClick(suggestion)}
+          type="button"
+          tabIndex="-1" // Prevent the button from receiving focus
+        >
+          {suggestion}
+        </button>
+      ))}
+    </div>
+  )
+}
+const PopupWarning = ({ showPopup, setShowPopup }) => (
+  showPopup && (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg shadow-xl">
+        <div className="flex items-center mb-4">
+          <AlertCircle className="text-red-500 mr-2" size={24} />
+          <h2 className="text-xl font-bold">Too Many Lines</h2>
+        </div>
+        <p className="mb-4">Your message exceeds 100 lines. Please shorten it before sending.</p>
+        <button
+          onClick={() => setShowPopup(false)}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-200"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  )
+)
+
 export default function Csgpt() {
   const [userQuery, setUserQuery] = useState("")
   const [messages, setMessages] = useState([])
@@ -65,36 +242,6 @@ export default function Csgpt() {
   const [showPopup, setShowPopup] = useState(false)
   const messagesEndRef = useRef(null)
   const chatContainerRef = useRef(null)
-  const textareaRef = useRef(null)
-
-  const convertMarkdownToPlainText = (markdown) => {
-    // Replace headers
-    let text = markdown.replace(/#{1,6}\s?/g, '');
-    
-    // Replace bold and italic
-    text = text.replace(/(\*\*|__)(.*?)\1/g, '$2');
-    text = text.replace(/(\*|_)(.*?)\1/g, '$2');
-    
-    // Replace links
-    text = text.replace(/\[([^\]]+)\]$$([^$$]+)\)/g, '$1 ($2)');
-    
-    // Replace code blocks
-    text = text.replace(/```[\s\S]*?```/g, (match) => {
-      return match.replace(/```/g, '').trim();
-    });
-    
-    // Replace inline code
-    text = text.replace(/`([^`]+)`/g, '$1');
-    
-    // Replace lists
-    text = text.replace(/^\s*[-*+]\s+/gm, '• ');
-    text = text.replace(/^\s*\d+\.\s+/gm, (match, offset) => {
-      const num = parseInt(match);
-      return isNaN(num) ? match : `${num}. `;
-    });
-
-    return text.trim();
-  }
 
   const suggestions = [
     "Explain DNS with text diagram.",
@@ -130,13 +277,6 @@ export default function Csgpt() {
   useEffect(scrollToBottom, [messages])
 
   useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto'
-      const newHeight = Math.min(textareaRef.current.scrollHeight, window.innerHeight / 4)
-      textareaRef.current.style.height = `${newHeight}px`
-    }
-    
-    // Count lines
     const lines = userQuery.split('\n')
     setLineCount(lines.length)
   }, [userQuery])
@@ -216,13 +356,6 @@ export default function Csgpt() {
     }
   }
 
-  const handleKeyDown = (event) => {
-    if (event.key === 'Enter' && !event.shiftKey && !isMobile) {
-      event.preventDefault()
-      handleSubmit(event)
-    }
-  }
-
   const handleDownload = async () => {
     setIsDownloading(true)
   
@@ -267,7 +400,9 @@ export default function Csgpt() {
       console.error("Error generating PDF:", error)
       alert("There was an error generating the PDF. Please try again.")
     } finally {
-      setIsDownloading(false)
+      setIs
+
+Downloading(false)
     }
   }
 
@@ -288,6 +423,23 @@ export default function Csgpt() {
       })
   }
 
+  const convertMarkdownToPlainText = (markdown) => {
+    let text = markdown.replace(/#{1,6}\s?/g, '')
+    text = text.replace(/(\*\*|__)(.*?)\1/g, '$2')
+    text = text.replace(/(\*|_)(.*?)\1/g, '$2')
+    text = text.replace(/\[([^\]]+)\]$$([^$$]+)\)/g, '$1 ($2)')
+    text = text.replace(/```[\s\S]*?```/g, (match) => {
+      return match.replace(/```/g, '').trim()
+    })
+    text = text.replace(/`([^`]+)`/g, '$1')
+    text = text.replace(/^\s*[-*+]\s+/gm, '• ')
+    text = text.replace(/^\s*\d+\.\s+/gm, (match, offset) => {
+      const num = parseInt(match)
+      return isNaN(num) ? match : `${num}. `
+    })
+    return text.trim()
+  }
+
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800 flex flex-col">
       <div className="absolute inset-0 z-0">
@@ -296,24 +448,7 @@ export default function Csgpt() {
       </div>
       
       <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col h-screen">
-        <div className="flex justify-between items-center p-4">
-          <Link to="/">
-            <Cover>
-              <span className="font-bold text-gray-400">CS</span>
-              <span className="font-bold text-gray-600">GPT</span>
-            </Cover>
-          </Link>
-          {messages.length > 0 && (
-            <button
-              onClick={handleDownload}
-              disabled={isDownloading}
-              className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-md flex items-center transition-colors duration-200 ease-in-out"
-            >
-              <Download className="mr-2 h-4 w-4" />
-              {isDownloading ? 'Downloading...' : 'Save as PDF'}
-            </button>
-          )}
-        </div>
+        <Header messages={messages} handleDownload={handleDownload} isDownloading={isDownloading} />
 
         <div className="flex-grow overflow-hidden flex flex-col">
           <div 
@@ -322,57 +457,7 @@ export default function Csgpt() {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex items-start ${message.type === "user" ? "justify-end" : "justify-start"}`}
-              >
-                {message.type === "ai" && (
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-transparent flex items-center justify-center mr-2">
-                    <img
-                      src="/logo.png"
-                      alt="CSGPT Logo"
-                      width={32}
-                      height={32}
-                    />
-                  </div>
-                )}
-                <div className={`max-w-[85%] text-white ${message.type === "user" ? "text-right" : "text-left"}`}>
-                  {message.type === "ai" ? (
-                    <ReactMarkdown
-                      components={{
-                        p: ({ node, ...props }) => <p className="mb-2" {...props} />,
-                        ul: ({ node, ...props }) => <ul className="list-disc pl-4 mb-2" {...props} />,
-                        ol: ({ node, ...props }) => <ol className="list-decimal pl-4 mb-2" {...props} />,
-                        li: ({ node, ...props }) => <li className="mb-1" {...props} />,
-                        h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mb-2" {...props} />,
-                        h2: ({ node, ...props }) => <h2 className="text-xl font-bold mb-2" {...props} />,
-                        h3: ({ node, ...props }) => <h3 className="text-lg font-bold mb-2" {...props} />,
-                        code: ({ node, inline, ...props }) => 
-                          inline ? (
-                            <code className="bg-gray-800 rounded px-1" {...props} />
-                          ) : (
-                            <pre className="bg-gray-800 rounded p-2 overflow-x-auto">
-                              <code {...props} />
-                            </pre>
-                          ),
-                      }}
-                    >
-                      {message.content}
-                    </ReactMarkdown>
-                  ) : message.type === "error" ? (
-                    <span className="text-red-500">{message.content}</span>
-                  ) : (
-                    message.content
-                  )}
-                </div>
-                <button
-                  onClick={() => handleCopy(message.content)}
-                  className="ml-2 text-gray-400 hover:text-white transition-colors duration-200"
-                  title="Copy to clipboard"
-                >
-                  <Copy size={16} />
-                </button>
-              </div>
+              <ChatMessage key={index} message={message} handleCopy={handleCopy} />
             ))}
             {isLoading && (
               <div className="flex justify-center items-center space-x-2">
@@ -400,77 +485,23 @@ export default function Csgpt() {
             onSubmit={handleSubmit}
           >
             {showSuggestions && (
-              <div className="flex flex-wrap justify-center gap-2 mb-4 w-full">
-                {suggestions.map((suggestion, index) => (
-                  <button
-                    key={index}
-                    className="bg-gray-700 bg-opacity-50 text-white px-3 py-1 rounded-md text-sm hover:bg-opacity-75 transition-colors"
-                    onClick={() => setUserQuery(suggestion)}
-                    type="button"
-                  >
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
+              <Suggestions suggestions={suggestions} setUserQuery={setUserQuery} />
             )}
-            <div className="relative w-full">
-              <textarea
-                ref={textareaRef}
-                value={userQuery}
-                onChange={(e) => setUserQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="w-full p-3 pb-12 rounded-md text-white bg-transparent border border-white border-opacity-30 focus:outline-none focus:ring-1 focus:ring-white focus:ring-opacity-50 resize-none overflow-y-auto scrollbar-hide"
-                placeholder="Ask me anything..."
-                rows={1}
-                style={{
-                  maxHeight: 'calc(50vh - 40px)', // Subtracting height for buttons
-                  scrollbarWidth: 'none',
-                  msOverflowStyle: 'none'
-                }}
-              />
-              <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center bg-neutral-800 p-2 rounded-md">
-                <button
-                  type="button"
-                  onClick={handleClearChat}
-                  className="text-gray-400 hover:text-white transition-colors duration-200"
-                  title="Clear chat"
-                >
-                  <Trash2 size={20} />
-                </button>
-                <span className={`text-sm ${lineCount > 100 ? 'text-red-500' : 'text-gray-400'}`}>
-                  {lineCount}/100
-                </span>
-                <button
-                  type="submit"
-                  className="text-white p-1 rounded-md focus:outline-none hover:text-gray-300 transition-colors duration-200"
-                  disabled={isLoading}
-                >
-                  <Send size={20} />
-                </button>
-              </div>
-            </div>
+            <ChatInput 
+              userQuery={userQuery}
+              setUserQuery={setUserQuery}
+              handleSubmit={handleSubmit}
+              handleClearChat={handleClearChat}
+              lineCount={lineCount}
+              isLoading={isLoading}
+              isMobile={isMobile}
+            />
             <span className="text-gray-400 mt-2 text-center">CSGPT can only give answers from relevant books.</span>
           </form>
         </div>
       </div>
 
-      {showPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl">
-            <div className="flex items-center mb-4">
-              <AlertCircle className="text-red-500 mr-2" size={24} />
-              <h2 className="text-xl font-bold">Too Many Lines</h2>
-            </div>
-            <p className="mb-4">Your message exceeds 100 lines. Please shorten it before sending.</p>
-            <button
-              onClick={() => setShowPopup(false)}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-200"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      <PopupWarning showPopup={showPopup} setShowPopup={setShowPopup} />
     </div>
   )
 }
