@@ -233,12 +233,12 @@ export default function Csgpt() {
       
       <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col h-screen">
         <div className="flex justify-between items-center p-4">
-          <Cover>
             <Link to="/">
+          <Cover>
               <span className="font-bold text-gray-400">CS</span>
               <span className="font-bold text-gray-600">GPT</span>
-            </Link>
           </Cover>
+            </Link>
           {messages.length > 0 && (
             <button
               onClick={handleDownload}

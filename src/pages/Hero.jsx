@@ -17,7 +17,7 @@ export default function Hero() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const token =localStorage.getItem("Token")
+    const token = localStorage.getItem("Token")
 
     if (!token) {
       alert('Unauthorized. Please sign in.')
@@ -27,7 +27,7 @@ export default function Hero() {
     console.log(token)
     const myHeaders = new Headers();
     myHeaders.append("Authorization", `Bearer ${token}`);
-    myHeaders.append('Content-Type',"application/json");
+    myHeaders.append('Content-Type', "application/json");
 
     const jsonData = {
       name: name,
@@ -43,17 +43,41 @@ export default function Hero() {
       redirect: "follow"
     };
 
-fetch(`${google_ngrok_url}/app/take_review/`, requestOptions)
-  .then((response) => response.text())
-  .then((result) => console.log(result));
+    fetch(`${google_ngrok_url}/app/take_review/`, requestOptions)
+      .then((response) => response.text())
+      .then((result) => console.log(result));
 
-      setName('')
-      setEmail('')
-      setFeedback('')
-      setRating('0')
-      alert('Thank you for your feedback!')
-    
+    setName('')
+    setEmail('')
+    setFeedback('')
+    setRating('0')
+    alert('Thank you for your feedback!')
   }
+
+  const subjects = [
+    "Information Retrieval",
+    "Natural Language Processing",
+    "Management Information System",
+    "Computer Networks",
+    "Software Engineering",
+    "Data Warehouse Mining",
+    "Information Technology",
+    "Mobile Computing",
+    "Cryptography and System Security"
+  ];
+
+  const subjectColors = [
+    'from-pink-200 to-rose-200',
+    'from-purple-200 to-indigo-200',
+    'from-blue-200 to-cyan-200',
+    'from-teal-200 to-green-200',
+    'from-lime-200 to-yellow-200',
+    'from-amber-200 to-orange-200',
+    'from-red-200 to-pink-200',
+    'from-fuchsia-200 to-purple-200',
+    'from-violet-200 to-blue-200'
+  ];
+
   return (
     <div className="pt-[50px] relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800">
       <div className="absolute inset-0 z-0">
@@ -81,6 +105,54 @@ fetch(`${google_ngrok_url}/app/take_review/`, requestOptions)
         <button className="inline-flex h-12 p-2 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-6 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50 hover:bg-slate-800">
           <Link to="/csgpt">Get Started</Link>
         </button>
+
+        <div className="w-full max-w-4xl mx-auto mt-12 p-6 rounded-lg shadow-lg relative overflow-hidden">
+          <div className="mb-12"><h3 className="text-4xl font-bold text-white px-3">SUPPORTED SUBJECTS</h3></div>  
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {subjects.map((subject, index) => (
+              <div key={index} className="relative group h-24">
+                <div className={`absolute -inset-0.5 bg-gradient-to-r ${subjectColors[index]} rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200`}></div>
+                <div className="relative h-full px-4 py-3 bg-neutral-900 ring-1 ring-gray-900/5 rounded-lg leading-none flex items-center justify-center">
+                  <p className="text-slate-300 group-hover:text-white transition duration-200 text-sm">{subject}</p>
+                  <div className="absolute bottom-1 right-1">
+                    <div className="pulsating-dot"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <style jsx>{`
+          .pulsating-dot {
+            width: 6px;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            position: relative;
+            }
+            .pulsating-dot::after {
+              content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            animation: pulses 1.5s ease-out infinite;
+          }
+          @keyframes pulses {
+            0% {
+              transform: scale(1);
+              opacity: 1;
+            }
+            100% {
+              transform: scale(4);
+              opacity: 0;
+            }
+          }
+        `}</style>
 
         <section className="relative z-10 py-16 px-4 text-center">
           <h2 className="mb-10 text-4xl font-bold text-white">Key Features</h2>

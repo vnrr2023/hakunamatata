@@ -66,12 +66,12 @@ export default function Navbar() {
             <div className={`w-full fixed top-0 left-0 z-50 transition-all duration-500 ${navBackground}`}>
                 <div className="md:px-10 py-4 px-7 flex justify-between items-center">
                     <div>
+                        <Link to="/">
                         <Cover>
-                            <Link to="/">
                                 <span className="font-bold text-gray-400">CS</span>
                                 <span className="font-bold text-gray-600">GPT</span>
-                            </Link>
                         </Cover>
+                        </Link>
                     </div>
                     <ul className="hidden md:flex md:items-center">
                         {Links.map((link) => (
