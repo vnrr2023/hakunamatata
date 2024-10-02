@@ -4,10 +4,11 @@ import { StarsBackground } from "../components/ui/stars-background"
 import ReactMarkdown from 'react-markdown'
 import { Cover } from "../components/ui/cover"
 import { Link } from "react-router-dom"
-import { ChevronDown, Download, Trash2, Send } from "lucide-react"
+import { ChevronDown, Download, Trash2, Send, Copy, AlertCircle } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { pdf, Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
 import { google_ngrok_url } from "./SignUp"
+
 Font.register({
   family: 'Roboto',
   src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-light-webfont.ttf'
@@ -70,6 +71,9 @@ export default function Csgpt() {
   const [isDownloading, setIsDownloading] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(true)
   const [showScrollDown, setShowScrollDown] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [lineCount, setLineCount] = useState(0)
+  const [showPopup, setShowPopup] = useState(false)
   const messagesEndRef = useRef(null)
   const chatContainerRef = useRef(null)
   const textareaRef = useRef(null)
@@ -88,6 +92,13 @@ export default function Csgpt() {
       router("/signup")
     }
     
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
   }, [router])
   
   useEffect(() => {
@@ -103,8 +114,13 @@ export default function Csgpt() {
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
+      const newHeight = Math.min(textareaRef.current.scrollHeight, window.innerHeight / 4)
+      textareaRef.current.style.height = `${newHeight}px`
     }
+    
+    // Count lines
+    const lines = userQuery.split('\n')
+    setLineCount(lines.length)
   }, [userQuery])
 
   useEffect(() => {
@@ -121,9 +137,15 @@ export default function Csgpt() {
       return () => chatContainer.removeEventListener('scroll', checkScroll)
     }
   }, [])
+
   const handleSubmit = async (event) => {
     event.preventDefault()
     if (!userQuery.trim()) return
+    
+    if (lineCount > 100) {
+      setShowPopup(true)
+      return
+    }
   
     setMessages((prevMessages) => [...prevMessages, { type: "user", content: userQuery }])
     setIsLoading(true)
@@ -172,8 +194,17 @@ export default function Csgpt() {
     } finally {
       setIsLoading(false)
       setUserQuery("")
+      setLineCount(0)
     }
   }
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' && !event.shiftKey && !isMobile) {
+      event.preventDefault()
+      handleSubmit(event)
+    }
+  }
+
   const handleDownload = async () => {
     setIsDownloading(true)
   
@@ -195,7 +226,9 @@ export default function Csgpt() {
             <View key={index} style={styles.questionAnswer}>
               <Text style={styles.question}>Q: {item.question}</Text>
               <View style={styles.answerContainer}>
-                <Text style={styles.answer}>A: {item.answer}</Text>
+                <Text style={styles.answer}>
+                  A: {item.answer.replace(/\n/g, '\n   ')}
+                </Text>
               </View>
             </View>
           ))}
@@ -221,9 +254,22 @@ export default function Csgpt() {
       setIsDownloading(false)
     }
   }
+
   const handleClearChat = () => {
     setMessages([])
     setShowSuggestions(true)
+    setUserQuery("")
+    setLineCount(0)
+  }
+
+  const handleCopy = (content) => {
+    navigator.clipboard.writeText(content)
+      .then(() => {
+        console.log('Content copied to clipboard')
+      })
+      .catch(err => {
+        console.error('Failed to copy: ', err)
+      })
   }
 
   return (
@@ -235,12 +281,12 @@ export default function Csgpt() {
       
       <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col h-screen">
         <div className="flex justify-between items-center p-4">
-            <Link to="/">
-          <Cover>
+          <Link to="/">
+            <Cover>
               <span className="font-bold text-gray-400">CS</span>
               <span className="font-bold text-gray-600">GPT</span>
-          </Cover>
-            </Link>
+            </Cover>
+          </Link>
           {messages.length > 0 && (
             <button
               onClick={handleDownload}
@@ -303,6 +349,13 @@ export default function Csgpt() {
                     message.content
                   )}
                 </div>
+                <button
+                  onClick={() => handleCopy(message.content)}
+                  className="ml-2 text-gray-400 hover:text-white transition-colors duration-200"
+                  title="Copy to clipboard"
+                >
+                  <Copy size={16} />
+                </button>
               </div>
             ))}
             {isLoading && (
@@ -344,8 +397,22 @@ export default function Csgpt() {
                 ))}
               </div>
             )}
-            <div className="relative w-full flex items-center">
-              <div className="absolute left-2 flex space-x-2">
+            <div className="relative w-full">
+              <textarea
+                ref={textareaRef}
+                value={userQuery}
+                onChange={(e) => setUserQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="w-full p-3 pb-12 rounded-md text-white bg-transparent border border-white border-opacity-30 focus:outline-none focus:ring-1 focus:ring-white focus:ring-opacity-50 resize-none overflow-y-auto scrollbar-hide"
+                placeholder="Ask me anything..."
+                rows={1}
+                style={{
+                  maxHeight: 'calc(50vh - 40px)', // Subtracting height for buttons
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none'
+                }}
+              />
+              <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center bg-neutral-800 p-2 rounded-md">
                 <button
                   type="button"
                   onClick={handleClearChat}
@@ -354,27 +421,40 @@ export default function Csgpt() {
                 >
                   <Trash2 size={20} />
                 </button>
+                <span className={`text-sm ${lineCount > 100 ? 'text-red-500' : 'text-gray-400'}`}>
+                  {lineCount}/100
+                </span>
+                <button
+                  type="submit"
+                  className="text-white p-1 rounded-md focus:outline-none hover:text-gray-300 transition-colors duration-200"
+                  disabled={isLoading}
+                >
+                  <Send size={20} />
+                </button>
               </div>
-              <textarea
-                ref={textareaRef}
-                value={userQuery}
-                onChange={(e) => setUserQuery(e.target.value)}
-                className="w-full p-3 pl-12 pr-12 rounded-md text-white bg-transparent border border-white border-opacity-30 focus:outline-none focus:ring-1 focus:ring-white focus:ring-opacity-50 resize-none overflow-hidden"
-                placeholder="Ask me anything..."
-                rows={1}
-              />
-              <button
-                type="submit"
-                className="absolute right-3 text-white p-1 rounded-md focus:outline-none hover:text-gray-300 transition-colors duration-200"
-                disabled={isLoading}
-              >
-                <Send size={20} />
-              </button>
             </div>
             <span className="text-gray-400 mt-2 text-center">CSGPT can only give answers from relevant books.</span>
           </form>
         </div>
       </div>
+
+      {showPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl">
+            <div className="flex items-center mb-4">
+              <AlertCircle className="text-red-500 mr-2" size={24} />
+              <h2 className="text-xl font-bold">Too Many Lines</h2>
+            </div>
+            <p className="mb-4">Your message exceeds 100 lines. Please shorten it before sending.</p>
+            <button
+              onClick={() => setShowPopup(false)}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-200"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

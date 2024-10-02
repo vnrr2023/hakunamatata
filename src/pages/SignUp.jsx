@@ -29,10 +29,12 @@ export default function SignUp() {
       .then(res => res.json())
       .then(data => {
         localStorage.setItem("Token", data.access)
+        
         const user = localStorage.getItem("Token");
         if (user) {
           navigate("/csgpt") 
         }
+
       })
       .catch(err => console.error("Error in Google login: ", err))
   }
