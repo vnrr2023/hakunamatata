@@ -147,12 +147,24 @@ export default function Csgpt() {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
   
-      const data = await response.json()
-      
-      if (data.server_status && data.data) {
-        setMessages(prevMessages => [...prevMessages, { type: "ai", content: data.data }])
-      } else {
-        throw new Error("Invalid response format")
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+  
+      let aiResponse = ""
+      setMessages(prevMessages => [...prevMessages, { type: "ai", content: aiResponse }])
+  
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+  
+        const chunk = decoder.decode(value, { stream: true })
+        aiResponse += chunk
+  
+        setMessages(prevMessages => {
+          const newMessages = [...prevMessages]
+          newMessages[newMessages.length - 1] = { type: "ai", content: aiResponse }
+          return newMessages
+        })
       }
     } catch (error) {
       console.error("Error:", error)
@@ -163,7 +175,6 @@ export default function Csgpt() {
       setUserQuery("")
     }
   }
-
   const handleDownload = async () => {
     setIsDownloading(true)
   

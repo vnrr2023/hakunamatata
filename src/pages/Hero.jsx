@@ -24,7 +24,6 @@ export default function Hero() {
       navigate('/signup')
       return
     }
-    console.log(token)
     const myHeaders = new Headers();
     myHeaders.append("Authorization", `Bearer ${token}`);
     myHeaders.append('Content-Type', "application/json");

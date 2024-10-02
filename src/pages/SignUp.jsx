@@ -22,16 +22,13 @@ export default function SignUp() {
   const handleCallbackResponse = (response) => {
     const formData = new FormData()
     formData.append("token", response.credential)
-    console.log(response.credential)
     fetch(`${google_ngrok_url}/app/auth/login/`, {
       method: "POST",
       body: formData,
     })
       .then(res => res.json())
       .then(data => {
-        console.log("Backend response: ", data)
         localStorage.setItem("Token", data.access)
-        console.log(data.access)
         const user = localStorage.getItem("Token");
         if (user) {
           navigate("/csgpt") 
