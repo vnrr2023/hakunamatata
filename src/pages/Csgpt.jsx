@@ -400,9 +400,7 @@ export default function Csgpt() {
       console.error("Error generating PDF:", error)
       alert("There was an error generating the PDF. Please try again.")
     } finally {
-      setIs
-
-Downloading(false)
+      setIsDownloading(false)
     }
   }
 
