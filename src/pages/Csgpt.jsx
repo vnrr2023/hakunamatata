@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import { ShootingStars } from "../components/ui/shooting-stars"
 import { StarsBackground } from "../components/ui/stars-background"
 import ReactMarkdown from 'react-markdown'
@@ -188,6 +188,7 @@ const ChatInput = ({ userQuery, setUserQuery, handleSubmit, handleClearChat, lin
     </div>
   )
 }
+
 const Suggestions = ({ suggestions, setUserQuery }) => {
   const handleSuggestionClick = (suggestion) => {
     setUserQuery(suggestion)
@@ -210,6 +211,7 @@ const Suggestions = ({ suggestions, setUserQuery }) => {
     </div>
   )
 }
+
 const PopupWarning = ({ showPopup, setShowPopup }) => (
   showPopup && (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -329,6 +331,8 @@ export default function Csgpt() {
   
       const data = await response.json()
   
+      console.log("Server response:", JSON.stringify(data, null, 2))
+  
       if (!data || typeof data !== 'object') {
         throw new Error("Invalid response format: Response is not an object")
       }
@@ -337,22 +341,28 @@ export default function Csgpt() {
         throw new Error("Invalid response format: Missing required fields")
       }
   
-      if (data.server_status && typeof data.data === 'string') {
-        const words = data.data.split(' ')
-        let aiResponse = ""
-        setMessages(prevMessages => [...prevMessages, { type: "ai", content: aiResponse }])
+      if (data.server_status === true) {
+        if (typeof data.data === 'string') {
+          const words = data.data.split(' ')
+          let aiResponse = ""
+          setMessages(prevMessages => [...prevMessages, { type: "ai", content: aiResponse }])
   
-        for (let i = 0; i < words.length; i++) {
-          await new Promise(resolve => setTimeout(resolve, 50)) // Delay between words
-          aiResponse += words[i] + ' '
-          setMessages(prevMessages => {
-            const newMessages = [...prevMessages]
-            newMessages[newMessages.length - 1] = { type: "ai", content: aiResponse.trim() }
-            return newMessages
-          })
+          for (let i = 0; i < words.length; i++) {
+            await new Promise(resolve => setTimeout(resolve, 50)) // Delay between words
+            aiResponse += words[i] + ' '
+            setMessages(prevMessages => {
+              const newMessages = [...prevMessages]
+              newMessages[newMessages.length - 1] = { type: "ai", content: aiResponse.trim() }
+              return newMessages
+            })
+          }
+        } else {
+          throw new Error("Invalid response format: 'data' field is not a string")
         }
+      } else if (data.server_status === false) {
+        throw new Error(`Server error: ${data.data}`)
       } else {
-        throw new Error("Invalid response format: Unexpected data structure")
+        throw new Error("Invalid response format: Unexpected server_status value")
       }
     } catch (error) {
       console.error("Error:", error)
