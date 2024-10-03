@@ -4,7 +4,7 @@ import { ShootingStars } from "../components/ui/shooting-stars"
 import { StarsBackground } from "../components/ui/stars-background"
 import { motion } from "framer-motion"
 import { useNavigate } from "react-router-dom";
-export const google_ngrok_url = "https://fed5-43-231-238-206.ngrok-free.app"
+export const google_ngrok_url = "https://fcbc-2409-40c0-e-74ec-75d8-f8f5-fa9a-b5d2.ngrok-free.app"
 
 export default function SignUp() {
   const navigate = useNavigate()
