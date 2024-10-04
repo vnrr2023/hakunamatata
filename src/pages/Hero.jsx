@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ShootingStars } from "../components/ui/shooting-stars";
 import { StarsBackground } from "../components/ui/stars-background";
 import { Spotlight } from "../components/ui/Spotlight";
@@ -14,6 +14,48 @@ export default function Hero() {
   const [feedback, setFeedback] = useState('')
   const [rating, setRating] = useState('0')
   const navigate = useNavigate()
+  const timeoutRef = useRef(null);
+  const subjectsRef = useRef(null);
+
+  useEffect(() => {
+    // Scroll to top on component mount
+    window.scrollTo(0, 0);
+
+    // Set up event listeners for user interaction
+    const resetTimer = () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(scrollToSubjects, 10000); // 10 seconds
+    };
+
+    const handleInteraction = () => {
+      resetTimer();
+    };
+
+    window.addEventListener('mousemove', handleInteraction);
+    window.addEventListener('click', handleInteraction);
+    window.addEventListener('scroll', handleInteraction);
+    window.addEventListener('keypress', handleInteraction);
+
+    resetTimer(); // Initial timer setup
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      window.removeEventListener('mousemove', handleInteraction);
+      window.removeEventListener('click', handleInteraction);
+      window.removeEventListener('scroll', handleInteraction);
+      window.removeEventListener('keypress', handleInteraction);
+    };
+  }, []);
+
+  const scrollToSubjects = () => {
+    if (subjectsRef.current) {
+      subjectsRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -107,7 +149,7 @@ export default function Hero() {
         </button>
         </Link>
 
-        <div className="w-full max-w-4xl mx-auto mt-12 p-6 rounded-lg shadow-lg relative overflow-hidden">
+        <div ref={subjectsRef} className="w-full max-w-4xl mx-auto mt-12 p-6 rounded-lg shadow-lg relative overflow-hidden">
           <div className="mb-12"><h3 className="text-4xl font-bold text-white px-3">SUPPORTED SUBJECTS</h3></div>  
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {subjects.map((subject, index) => (
