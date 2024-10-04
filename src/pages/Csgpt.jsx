@@ -4,7 +4,7 @@ import { StarsBackground } from "../components/ui/stars-background"
 import ReactMarkdown from 'react-markdown'
 import { Cover } from "../components/ui/cover"
 import { Link } from "react-router-dom"
-import { ChevronDown, Download, Trash2, Send, Copy, AlertCircle } from "lucide-react"
+import { ChevronDown, Download, Trash2, Send, Copy, AlertCircle, Mail, Share2 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { pdf, Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
 import { google_ngrok_url } from "./SignUp"
