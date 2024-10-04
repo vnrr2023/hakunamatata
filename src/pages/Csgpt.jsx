@@ -306,6 +306,7 @@ export default function Csgpt() {
   const messagesEndRef = useRef(null)
   const chatContainerRef = useRef(null)
   const [pdfBlob, setPdfBlob] = useState(null)
+  const [pdfError, setPdfError] = useState(null)
   const [showSharingOptions, setShowSharingOptions] = useState(false)
 
   const suggestions = [
@@ -440,6 +441,7 @@ export default function Csgpt() {
 
   const handleDownload = async () => {
     setIsDownloading(true)
+    setPdfError(null)
   
     const history = messages.reduce((acc, message, index, array) => {
       if (message.type === "user") {
@@ -469,12 +471,14 @@ export default function Csgpt() {
     )
   
     try {
+      console.log("Starting PDF generation...")
       const blob = await pdf(<MyDocument />).toBlob()
+      console.log("PDF generated successfully")
       setPdfBlob(blob)
       setShowSharingOptions(true)
     } catch (error) {
       console.error("Error generating PDF:", error)
-      alert("There was an error generating the PDF. Please try again.")
+      setPdfError("There was an error generating the PDF. Please try again.")
     } finally {
       setIsDownloading(false)
     }
@@ -483,6 +487,7 @@ export default function Csgpt() {
   const closeSharingOptions = () => {
     setShowSharingOptions(false)
     setPdfBlob(null)
+    setPdfError(null)
   }
 
   const handleClearChat = () => {
@@ -579,6 +584,32 @@ export default function Csgpt() {
         </div>
         {showSharingOptions && (
           <ShareOptions pdfBlob={pdfBlob} closeSharingOptions={closeSharingOptions} />
+        )}
+        {isDownloading && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-xl">
+              <h2 className="text-xl font-bold mb-4">Generating PDF</h2>
+              <div className="flex justify-center items-center space-x-2">
+                <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"></div>
+                <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+              </div>
+            </div>
+          </div>
+        )}
+        {pdfError && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-xl">
+              <h2 className="text-xl font-bold mb-4 text-red-500">Error</h2>
+              <p>{pdfError}</p>
+              <button
+                onClick={() => setPdfError(null)}
+                className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-200"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         )}
       </div>
 
