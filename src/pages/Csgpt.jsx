@@ -232,6 +232,67 @@ const PopupWarning = ({ showPopup, setShowPopup }) => (
   )
 )
 
+const ShareOptions = ({ pdfBlob, closeSharingOptions }) => {
+  const handleGmailShare = () => {
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&tf=1&su=CSGPT%20Chat%20History&body=${encodeURIComponent('Please find attached the CSGPT chat history.')}`
+    window.open(gmailUrl, '_blank')
+  }
+
+  const handleWhatsAppShare = () => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+    const whatsappUrl = isMobile
+      ? `whatsapp://send?text=${encodeURIComponent('Check out my CSGPT chat history!')}`
+      : 'https://web.whatsapp.com/'
+    window.open(whatsappUrl, '_blank')
+  }
+
+  const handleLocalSave = () => {
+    const url = URL.createObjectURL(pdfBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'csgpt-chat-history.pdf'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+    closeSharingOptions()
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg shadow-xl">
+        <h2 className="text-xl font-bold mb-4">Share or Save PDF</h2>
+        <div className="space-y-4">
+          <button
+            onClick={handleGmailShare}
+            className="w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors duration-200 flex items-center justify-center"
+          >
+            <Mail className="mr-2" /> Share via Gmail
+          </button>
+          <button
+            onClick={handleWhatsAppShare}
+            className="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-200 flex items-center justify-center"
+          >
+            <Share2 className="mr-2" /> Share via WhatsApp
+          </button>
+          <button
+            onClick={handleLocalSave}
+            className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center"
+          >
+            <Download className="mr-2" /> Save Locally
+          </button>
+        </div>
+        <button
+          onClick={closeSharingOptions}
+          className="mt-4 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function Csgpt() {
   const [userQuery, setUserQuery] = useState("")
   const [messages, setMessages] = useState([])
@@ -244,6 +305,8 @@ export default function Csgpt() {
   const [showPopup, setShowPopup] = useState(false)
   const messagesEndRef = useRef(null)
   const chatContainerRef = useRef(null)
+  const [pdfBlob, setPdfBlob] = useState(null)
+  const [showSharingOptions, setShowSharingOptions] = useState(false)
 
   const suggestions = [
     "Explain DNS with text diagram.",
@@ -407,20 +470,19 @@ export default function Csgpt() {
   
     try {
       const blob = await pdf(<MyDocument />).toBlob()
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = 'csgpt-chat-history.pdf'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(url)
+      setPdfBlob(blob)
+      setShowSharingOptions(true)
     } catch (error) {
       console.error("Error generating PDF:", error)
       alert("There was an error generating the PDF. Please try again.")
     } finally {
       setIsDownloading(false)
     }
+  }
+
+  const closeSharingOptions = () => {
+    setShowSharingOptions(false)
+    setPdfBlob(null)
   }
 
   const handleClearChat = () => {
@@ -466,7 +528,6 @@ export default function Csgpt() {
       
       <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col h-screen">
         <Header messages={messages} handleDownload={handleDownload} isDownloading={isDownloading} />
-
         <div className="flex-grow overflow-hidden flex flex-col">
           <div 
             ref={chatContainerRef} 
@@ -516,6 +577,9 @@ export default function Csgpt() {
             <span className="text-gray-400 mt-2 text-center">CSGPT can only give answers from relevant books.</span>
           </form>
         </div>
+        {showSharingOptions && (
+          <ShareOptions pdfBlob={pdfBlob} closeSharingOptions={closeSharingOptions} />
+        )}
       </div>
 
       <PopupWarning showPopup={showPopup} setShowPopup={setShowPopup} />
