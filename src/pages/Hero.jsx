@@ -1,12 +1,52 @@
-import React, { useState, useEffect, useRef } from "react";
-import { ShootingStars } from "../components/ui/shooting-stars";
-import { StarsBackground } from "../components/ui/stars-background";
-import { Spotlight } from "../components/ui/Spotlight";
-import { TextHoverEffect } from "../components/ui/text-hover-effect";
+import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { FaStar, FaSearch, FaRobot, FaUser, FaBolt } from 'react-icons/fa';
 import { google_ngrok_url } from "./SignUp";
 import { useNavigate } from "react-router-dom";
+
+// Modify these imports to use default exports
+const ShootingStars = lazy(() => import("../components/ui/shooting-stars").then(module => ({ default: module.ShootingStars })));
+const StarsBackground = lazy(() => import("../components/ui/stars-background").then(module => ({ default: module.StarsBackground })));
+const Spotlight = lazy(() => import("../components/ui/Spotlight").then(module => ({ default: module.Spotlight })));
+const TextHoverEffect = lazy(() => import("../components/ui/text-hover-effect").then(module => ({ default: module.TextHoverEffect })));
+
+const LazyLoadedBackground = () => (
+  <Suspense fallback={<div className="bg-black" />}>
+    <div className="absolute inset-0 z-0">
+      <Spotlight
+        className="-top-40 left-0 md:left-80 md:-top-20"
+        fill="gray"
+      />
+      <ShootingStars />
+      <StarsBackground />
+    </div>
+  </Suspense>
+);
+
+const Feature = React.memo(({ icon, title, description }) => (
+  <div className="rounded-lg bg-neutral-800 bg-opacity-50 p-8 shadow-lg transition-all hover:bg-opacity-70 hover:shadow-xl transform hover:-translate-y-1 relative">
+    {icon}
+    <h3 className="mb-3 text-2xl font-semibold text-gray-300">{title}</h3>
+    <p className="text-gray-400">{description}</p>
+    {['top-1 left-1', 'top-1 right-1', 'bottom-1 left-1', 'bottom-1 right-1'].map((position, index) => (
+      <div key={index} className={`absolute ${position}`}>
+        <div className="pulsating-dot"></div>
+      </div>
+    ))}
+  </div>
+));
+
+const Subject = React.memo(({ subject, color }) => (
+  <div className="relative group h-24">
+    <div className={`absolute -inset-0.5 bg-gradient-to-r ${color} rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200`}></div>
+    <div className="relative h-full px-4 py-3 bg-neutral-900 ring-1 ring-gray-900/5 rounded-lg leading-none flex items-center justify-center">
+      <p className="text-slate-300 group-hover:text-white transition duration-200 text-sm">{subject}</p>
+      <div className="absolute bottom-1 right-1">
+        <div className="pulsating-dot"></div>
+      </div>
+    </div>
+  </div>
+));
 
 export default function Hero() {
   const [name, setName] = useState('')
@@ -46,10 +86,10 @@ export default function Hero() {
       resetTimer();
     };
 
-    window.addEventListener('mousemove', handleInteraction);
-    window.addEventListener('click', handleInteraction);
-    window.addEventListener('scroll', handleInteraction);
-    window.addEventListener('keypress', handleInteraction);
+    window.addEventListener('mousemove', handleInteraction, { passive: true });
+    window.addEventListener('click', handleInteraction, { passive: true });
+    window.addEventListener('scroll', handleInteraction, { passive: true });
+    window.addEventListener('keypress', handleInteraction, { passive: true });
 
     resetTimer();
 
@@ -65,13 +105,13 @@ export default function Hero() {
     };
   }, []);
 
-  const scrollToSubjects = () => {
+  const scrollToSubjects = useCallback(() => {
     if (subjectsRef.current) {
       subjectsRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  };
+  }, []);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault()
     const token = localStorage.getItem("Token")
 
@@ -98,16 +138,20 @@ export default function Hero() {
       redirect: "follow"
     };
 
-    fetch(`${google_ngrok_url}/app/take_review/`, requestOptions)
-      .then((response) => response.text())
-      .then((result) => console.log(result));
-
-    setName('')
-    setEmail('')
-    setFeedback('')
-    setRating('0')
-    alert('Thank you for your feedback!')
-  }
+    try {
+      const response = await fetch(`${google_ngrok_url}/app/take_review/`, requestOptions);
+      const result = await response.text();
+      console.log(result);
+      setName('')
+      setEmail('')
+      setFeedback('')
+      setRating('0')
+      alert('Thank you for your feedback!')
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      alert('An error occurred while submitting your feedback. Please try again.')
+    }
+  }, [name, email, rating, feedback, navigate]);
 
   const subjects = [
     "Information Retrieval",
@@ -133,16 +177,16 @@ export default function Hero() {
     'from-violet-200 to-blue-200'
   ];
 
+  const features = [
+    { icon: <FaBolt className="text-4xl mb-4 text-yellow-400" />, title: "Fast Answers", description: "Get instant responses to your queries" },
+    { icon: <FaSearch className="text-4xl mb-4 text-blue-400" />, title: "Relevant Results", description: "Receive information tailored to your needs" },
+    { icon: <FaRobot className="text-4xl mb-4 text-green-400" />, title: "Accurate Information", description: "Trust in the precision of our AI-powered answers" },
+    { icon: <FaUser className="text-4xl mb-4 text-purple-400" />, title: "User-Friendly", description: "Enjoy an intuitive and easy-to-use interface" }
+  ];
+
   return (
     <div className="pt-[50px] relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800">
-      <div className="absolute inset-0 z-0">
-        <Spotlight
-          className="-top-40 left-0 md:left-80 md:-top-20"
-          fill="gray"
-        />
-        <ShootingStars />
-        <StarsBackground />
-      </div>
+      <LazyLoadedBackground />
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 text-center">
         <img
           src="./logo.png"
@@ -150,9 +194,12 @@ export default function Hero() {
           width={200}
           height={200}
           className="mt-4 mb-4"
+          loading="lazy"
         />
         <div className="h-[12rem] lg:h-[24rem] flex items-center justify-center">
-          <TextHoverEffect text="CSGPT" />
+          <Suspense fallback={<div>Loading...</div>}>
+            <TextHoverEffect text="CSGPT" />
+          </Suspense>
         </div>
         <p className="mb-6 max-w-2xl text-lg text-gray-300 sm:text-xl">
           Search for anything with the power of AI
@@ -169,15 +216,7 @@ export default function Hero() {
           <div className="mb-12"><h3 className="text-4xl font-bold text-white px-3">SUPPORTED SUBJECTS</h3></div>  
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {subjects.map((subject, index) => (
-              <div key={index} className="relative group h-24">
-                <div className={`absolute -inset-0.5 bg-gradient-to-r ${subjectColors[index]} rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200`}></div>
-                <div className="relative h-full px-4 py-3 bg-neutral-900 ring-1 ring-gray-900/5 rounded-lg leading-none flex items-center justify-center">
-                  <p className="text-slate-300 group-hover:text-white transition duration-200 text-sm">{subject}</p>
-                  <div className="absolute bottom-1 right-1">
-                    <div className="pulsating-dot"></div>
-                  </div>
-                </div>
-              </div>
+              <Subject key={index} subject={subject} color={subjectColors[index]} />
             ))}
           </div>
         </div>
@@ -185,29 +224,8 @@ export default function Hero() {
         <section className="relative z-10 py-16 px-4 text-center">
           <h2 className="mb-10 text-4xl font-bold text-white">Key Features</h2>
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-            {[
-              { icon: <FaBolt className="text-4xl mb-4 text-yellow-400" />, title: "Fast Answers", description: "Get instant responses to your queries" },
-              { icon: <FaSearch className="text-4xl mb-4 text-blue-400" />, title: "Relevant Results", description: "Receive information tailored to your needs" },
-              { icon: <FaRobot className="text-4xl mb-4 text-green-400" />, title: "Accurate Information", description: "Trust in the precision of our AI-powered answers" },
-              { icon: <FaUser className="text-4xl mb-4 text-purple-400" />, title: "User-Friendly", description: "Enjoy an intuitive and easy-to-use interface" }
-            ].map((feature, index) => (
-              <div key={index} className="rounded-lg bg-neutral-800 bg-opacity-50 p-8 shadow-lg transition-all hover:bg-opacity-70 hover:shadow-xl transform hover:-translate-y-1 relative">
-                {feature.icon}
-                <h3 className="mb-3 text-2xl font-semibold text-gray-300">{feature.title}</h3>
-                <p className="text-gray-400">{feature.description}</p>
-                <div className="absolute top-1 left-1">
-                  <div className="pulsating-dot"></div>
-                </div>
-                <div className="absolute top-1 right-1">
-                  <div className="pulsating-dot"></div>
-                </div>
-                <div className="absolute bottom-1 left-1">
-                  <div className="pulsating-dot"></div>
-                </div>
-                <div className="absolute bottom-1 right-1">
-                  <div className="pulsating-dot"></div>
-                </div>
-              </div>
+            {features.map((feature, index) => (
+              <Feature key={index} {...feature} />
             ))}
           </div>
         </section>
