@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
+import React, { useState, useCallback, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { FaStar, FaSearch, FaRobot, FaUser, FaBolt } from 'react-icons/fa';
 import { google_ngrok_url } from "./SignUp";
 import { useNavigate } from "react-router-dom";
 
-// Modify these imports to use default exports
 const ShootingStars = lazy(() => import("../components/ui/shooting-stars").then(module => ({ default: module.ShootingStars })));
 const StarsBackground = lazy(() => import("../components/ui/stars-background").then(module => ({ default: module.StarsBackground })));
 const Spotlight = lazy(() => import("../components/ui/Spotlight").then(module => ({ default: module.Spotlight })));
@@ -54,62 +53,6 @@ export default function Hero() {
   const [feedback, setFeedback] = useState('')
   const [rating, setRating] = useState('0')
   const navigate = useNavigate()
-  const timeoutRef = useRef(null);
-  const getStartedRef = useRef(null);
-  const subjectsRef = useRef(null);
-
-  useEffect(() => {
-    if ('scrollRestoration' in history) {
-      history.scrollRestoration = 'manual';
-    }
-
-    window.scrollTo(0, 0);
-
-    const initialScrollTimeout = setTimeout(() => {
-      if (getStartedRef.current) {
-        const windowHeight = window.innerHeight;
-        const buttonRect = getStartedRef.current.getBoundingClientRect();
-        const scrollTo = buttonRect.top + window.pageYOffset - (windowHeight / 2) + (buttonRect.height / 2);
-        window.scrollTo({ top: scrollTo, behavior: 'smooth' });
-      }
-    }, 2000);
-
-    const resetTimer = () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      timeoutRef.current = setTimeout(scrollToSubjects, 10000);
-    };
-
-    const handleInteraction = () => {
-      clearTimeout(initialScrollTimeout);
-      resetTimer();
-    };
-
-    window.addEventListener('mousemove', handleInteraction, { passive: true });
-    window.addEventListener('click', handleInteraction, { passive: true });
-    window.addEventListener('scroll', handleInteraction, { passive: true });
-    window.addEventListener('keypress', handleInteraction, { passive: true });
-
-    resetTimer();
-
-    return () => {
-      clearTimeout(initialScrollTimeout);
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      window.removeEventListener('mousemove', handleInteraction);
-      window.removeEventListener('click', handleInteraction);
-      window.removeEventListener('scroll', handleInteraction);
-      window.removeEventListener('keypress', handleInteraction);
-    };
-  }, []);
-
-  const scrollToSubjects = useCallback(() => {
-    if (subjectsRef.current) {
-      subjectsRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, []);
 
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault()
@@ -187,32 +130,36 @@ export default function Hero() {
   return (
     <div className="pt-[50px] relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800">
       <LazyLoadedBackground />
-      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 text-center">
-        <img
-          src="./logo.png"
-          alt="CSGPT Logo"
-          width={200}
-          height={200}
-          className="mt-4 mb-4"
-          loading="lazy"
-        />
-        <div className="h-[12rem] lg:h-[24rem] flex items-center justify-center">
-          <Suspense fallback={<div>Loading...</div>}>
-            <TextHoverEffect text="CSGPT" />
-          </Suspense>
-        </div>
-        <p className="mb-6 max-w-2xl text-lg text-gray-300 sm:text-xl">
-          Search for anything with the power of AI
-        </p>
-        <div ref={getStartedRef}>
-          <Link to="/csgpt">
-            <button className="inline-flex h-12 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-6 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50 hover:shadow-[0_0_10px_2px_rgba(255,255,255,0.7)] hover:border-transparent">
-              Get Started
-            </button>
-          </Link>
+      <div className="relative z-10 flex flex-col items-center justify-center px-4 text-center">
+        <div className="min-h-screen flex flex-col items-center justify-center">
+          <img
+            src="./logo.png"
+            alt="CSGPT Logo"
+            width={200}
+            height={200}
+            className="mb-"
+            loading="lazy"
+          />
+          <div className="h-[12rem] lg:h-[18rem] flex items-center justify-center mb-0">
+            <Suspense fallback={<div>Loading...</div>}>
+              <TextHoverEffect text="CSGPT" />
+            </Suspense>
+          </div>
+          <div className="space-y-4">
+            <p className="max-w-2xl text-lg text-gray-300 sm:text-xl">
+              Search for anything with the power of AI
+            </p>
+            <div>
+              <Link to="/csgpt">
+                <button className="inline-flex h-12 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-6 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50 hover:shadow-[0_0_10px_2px_rgba(255,255,255,0.7)] hover:border-transparent">
+                  Get Started
+                </button>
+              </Link>
+            </div>
+          </div>
         </div>
 
-        <div ref={subjectsRef} className="w-full max-w-4xl mx-auto mt-12 p-6 rounded-lg shadow-lg relative overflow-hidden">
+        <div className="w-full max-w-4xl mx-auto mt-12 p-6 rounded-lg shadow-lg relative overflow-hidden">
           <div className="mb-12"><h3 className="text-4xl font-bold text-white px-3">SUPPORTED SUBJECTS</h3></div>  
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {subjects.map((subject, index) => (
