@@ -4,7 +4,7 @@ import { StarsBackground } from "../components/ui/stars-background";
 import { Spotlight } from "../components/ui/Spotlight";
 import { TextHoverEffect } from "../components/ui/text-hover-effect";
 import { Link } from "react-router-dom";
-import { FaStar, FaSearch, FaRobot, FaUser } from 'react-icons/fa';
+import { FaStar, FaSearch, FaRobot, FaUser, FaBolt } from 'react-icons/fa';
 import { google_ngrok_url } from "./SignUp";
 import { useNavigate } from "react-router-dom";
 
@@ -19,15 +19,12 @@ export default function Hero() {
   const subjectsRef = useRef(null);
 
   useEffect(() => {
-    // Prevent default scroll restoration
     if ('scrollRestoration' in history) {
       history.scrollRestoration = 'manual';
     }
 
-    // Scroll to top on component mount
     window.scrollTo(0, 0);
 
-    // Set up timer for initial scroll to Get Started button
     const initialScrollTimeout = setTimeout(() => {
       if (getStartedRef.current) {
         const windowHeight = window.innerHeight;
@@ -37,12 +34,11 @@ export default function Hero() {
       }
     }, 2000);
 
-    // Set up event listeners for user interaction
     const resetTimer = () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      timeoutRef.current = setTimeout(scrollToSubjects, 10000); // 10 seconds
+      timeoutRef.current = setTimeout(scrollToSubjects, 10000);
     };
 
     const handleInteraction = () => {
@@ -55,7 +51,7 @@ export default function Hero() {
     window.addEventListener('scroll', handleInteraction);
     window.addEventListener('keypress', handleInteraction);
 
-    resetTimer(); // Initial timer setup
+    resetTimer();
 
     return () => {
       clearTimeout(initialScrollTimeout);
@@ -163,10 +159,9 @@ export default function Hero() {
         </p>
         <div ref={getStartedRef}>
           <Link to="/csgpt">
-          <button className="inline-flex h-12 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-6 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50 hover:shadow-[0_0_10px_2px_rgba(255,255,255,0.7)] hover:border-transparent">
-  Get Started
-</button>
-
+            <button className="inline-flex h-12 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-6 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50 hover:shadow-[0_0_10px_2px_rgba(255,255,255,0.7)] hover:border-transparent">
+              Get Started
+            </button>
           </Link>
         </div>
 
@@ -187,60 +182,31 @@ export default function Hero() {
           </div>
         </div>
 
-        <style>{`
-          .pulsating-dot {
-            width: 6px;
-            height: 6px;
-            background-color: rgba(255, 255, 255, 0.8);
-            border-radius: 50%;
-            position: relative;
-          }
-          .pulsating-dot::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.8);
-            border-radius: 50%;
-            animation: pulses 1.5s ease-out infinite;
-          }
-          @keyframes pulses {
-            0% {
-              transform: scale(1);
-              opacity: 1;
-            }
-            100% {
-              transform: scale(4);
-              opacity: 0;
-            }
-          }
-          @keyframes shimmer {
-            0% {
-              background-position: 0% 0%;
-            }
-            100% {
-              background-position: -200% 0%;
-            }
-          }
-          .animate-shimmer {
-            animation: shimmer 2s linear infinite;
-          }
-        `}</style>
-
         <section className="relative z-10 py-16 px-4 text-center">
           <h2 className="mb-10 text-4xl font-bold text-white">Key Features</h2>
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: <FaSearch className="text-4xl mb-4 text-blue-400" />, title: "Advanced Search", description: "Powerful search capabilities to find exactly what you need" },
-              { icon: <FaRobot className="text-4xl mb-4 text-green-400" />, title: "AI-Powered", description: "Leveraging cutting-edge AI technology for intelligent results" },
-              { icon: <FaUser className="text-4xl mb-4 text-purple-400" />, title: "User-Friendly", description: "Intuitive interface designed for ease of use" }
+              { icon: <FaBolt className="text-4xl mb-4 text-yellow-400" />, title: "Fast Answers", description: "Get instant responses to your queries" },
+              { icon: <FaSearch className="text-4xl mb-4 text-blue-400" />, title: "Relevant Results", description: "Receive information tailored to your needs" },
+              { icon: <FaRobot className="text-4xl mb-4 text-green-400" />, title: "Accurate Information", description: "Trust in the precision of our AI-powered answers" },
+              { icon: <FaUser className="text-4xl mb-4 text-purple-400" />, title: "User-Friendly", description: "Enjoy an intuitive and easy-to-use interface" }
             ].map((feature, index) => (
-              <div key={index} className="rounded-lg bg-neutral-800 bg-opacity-50 p-8 shadow-lg transition-all hover:bg-opacity-70 hover:shadow-xl transform hover:-translate-y-1">
+              <div key={index} className="rounded-lg bg-neutral-800 bg-opacity-50 p-8 shadow-lg transition-all hover:bg-opacity-70 hover:shadow-xl transform hover:-translate-y-1 relative">
                 {feature.icon}
                 <h3 className="mb-3 text-2xl font-semibold text-gray-300">{feature.title}</h3>
                 <p className="text-gray-400">{feature.description}</p>
+                <div className="absolute top-1 left-1">
+                  <div className="pulsating-dot"></div>
+                </div>
+                <div className="absolute top-1 right-1">
+                  <div className="pulsating-dot"></div>
+                </div>
+                <div className="absolute bottom-1 left-1">
+                  <div className="pulsating-dot"></div>
+                </div>
+                <div className="absolute bottom-1 right-1">
+                  <div className="pulsating-dot"></div>
+                </div>
               </div>
             ))}
           </div>
@@ -282,11 +248,11 @@ export default function Hero() {
         <section className="relative z-10 py-16 px-4 text-center">
           <h2 className="mb-6 text-4xl font-bold text-white">Ready to Get Started?</h2>
           <p className="mb-8 text-lg text-gray-300">Join thousands of satisfied users and experience the future of search technology.</p>
-            <Link to="/csgpt">
+          <Link to="/csgpt">
             <button className="inline-flex h-12 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-6 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50 hover:shadow-[0_0_10px_2px_rgba(255,255,255,0.7)] hover:border-transparent">
- TRY CSGPT NOW
-</button>
-            </Link>
+              TRY CSGPT NOW
+            </button>
+          </Link>
         </section>
 
         <section className="relative z-10 py-16 px-4 text-center max-w-2xl mx-auto">
@@ -328,8 +294,8 @@ export default function Hero() {
                 className="w-full px-4 py-2 rounded-md bg-neutral-800 bg-opacity-50 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               ></textarea>
             </div>
-            <div>
-              <label className="block text-left text-gray-300 mb-2">Rating</label>
+            <div className="flex flex-col items-center">
+              <label className="block text-gray-300 mb-2">Rating</label>
               <div className="flex justify-center space-x-2">
                 {["1", "2", "3", "4", "5"].map((star) => (
                   <button
@@ -344,15 +310,55 @@ export default function Hero() {
               </div>
             </div>
             <button
-  type="submit"
-  className="w-full h-12 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-8 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50 hover:shadow-[0_0_10px_2px_rgba(255,255,255,0.7)] hover:border-transparent"
->
-  Submit Feedback
-</button>
-
+              type="submit"
+              className="w-full h-12 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-8 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50 hover:shadow-[0_0_10px_2px_rgba(255,255,255,0.7)] hover:border-transparent"
+            >
+              Submit Feedback
+            </button>
           </form>
         </section>
       </div>
+      <style>{`
+        .pulsating-dot {
+          width: 6px;
+          height: 6px;
+          background-color: rgba(255, 255, 255, 0.8);
+          border-radius: 50%;
+          position: relative;
+        }
+        .pulsating-dot::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgba(255, 255, 255, 0.8);
+          border-radius: 50%;
+          animation: pulses 1.5s ease-out infinite;
+        }
+        @keyframes pulses {
+          0% {
+            transform: scale(1);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(4);
+            opacity: 0;
+          }
+        }
+        @keyframes shimmer {
+          0% {
+            background-position: 0% 0%;
+          }
+          100% {
+            background-position: -200% 0%;
+          }
+        }
+        .animate-shimmer {
+          animation: shimmer 2s linear infinite;
+        }
+      `}</style>
     </div>
   )
 }

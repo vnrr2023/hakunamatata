@@ -24,7 +24,7 @@ function Layout() {
           <Route path="/signup" element={<SignUp />} />
         </Routes>
       </main>
-      {location.pathname !== '/csgpt' && <Footer />}
+      {location.pathname !== '/csgpt' && location.pathname !== '/signup' && <Footer />}
     </>
   );
 }
