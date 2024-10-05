@@ -1,42 +1,67 @@
-import { useEffect } from 'react'
-import { IconBrandGoogle } from "@tabler/icons-react"
+import React, { useEffect, useState } from 'react'
+import { IconBrandGoogle, IconLoader2 } from "@tabler/icons-react"
 import { ShootingStars } from "../components/ui/shooting-stars"
 import { StarsBackground } from "../components/ui/stars-background"
 import { motion } from "framer-motion"
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"
+
 export const google_ngrok_url = "https://75a6-2401-4900-56ea-2c2d-942e-dbcc-d508-677c.ngrok-free.app"
 
 export default function SignUp() {
   const navigate = useNavigate()
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState(null)
+
   useEffect(() => {
-    google.accounts.id.initialize({
-      client_id: import.meta.env.VITE_GOOGLE_KEY,
-      callback: handleCallbackResponse
-    })
-    google.accounts.id.renderButton(
-      document.getElementById("googleSignInDiv"),
-      { theme: "outline", size: "large" }
-    )
+    const initializeGoogleSignIn = () => {
+      if (typeof google !== 'undefined' && google.accounts) {
+        google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_KEY,
+          callback: handleCallbackResponse
+        })
+        google.accounts.id.renderButton(
+          document.getElementById("googleSignInDiv"),
+          { theme: "outline", size: "large" }
+        )
+      } else {
+        console.error("Google Sign-In API not loaded")
+        setError("Failed to load Google Sign-In. Please try again later.")
+      }
+    }
+    initializeGoogleSignIn()
+
+    const retryTimeout = setTimeout(initializeGoogleSignIn, 1000)
+
+    return () => clearTimeout(retryTimeout)
   }, [])
 
   const handleCallbackResponse = (response) => {
+    setIsLoading(true)
+    setError(null)
     const formData = new FormData()
     formData.append("token", response.credential)
+    
     fetch(`${google_ngrok_url}/app/auth/login/`, {
       method: "POST",
       body: formData,
     })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Login failed. Please try again.')
+        }
+        return res.json()
+      })
       .then(data => {
         localStorage.setItem("Token", data.access)
-        
-        const user = localStorage.getItem("Token");
-        if (user) {
-          navigate("/csgpt") 
-        }
-
+        navigate("/csgpt")
       })
-      .catch(err => console.error("Error in Google login: ", err))
+      .catch(err => {
+        console.error("Error in Google login: ", err)
+        setError(err.message || "An unexpected error occurred. Please try again.")
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
   }
 
   return (
@@ -59,14 +84,30 @@ export default function SignUp() {
                 <p className="text-gray-600 dark:text-gray-300">Sign in to your account</p>
               </div>
               <div id="googleSignInDiv" className="flex justify-center">
-                <button
-                  type="button"
-                  className="flex items-center justify-center px-6 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
-                >
-                  <IconBrandGoogle className="h-6 w-6 mr-2" />
-                  Sign in with Google
-                </button>
+                {isLoading ? (
+                  <button
+                    type="button"
+                    className="flex items-center justify-center px-6 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 cursor-not-allowed"
+                    disabled
+                  >
+                    <IconLoader2 className="h-6 w-6 mr-2 animate-spin" />
+                    Signing in...
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="flex items-center justify-center px-6 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
+                  >
+                    <IconBrandGoogle className="h-6 w-6 mr-2" />
+                    Sign in with Google
+                  </button>
+                )}
               </div>
+              {error && (
+                <div className="text-red-500 text-center text-sm">
+                  {error}
+                </div>
+              )}
             </div>
             <div className="px-8 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
               <p className="text-xs text-center text-gray-600 dark:text-gray-400">

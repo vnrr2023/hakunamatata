@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   },
 })
 
-const Header = ({ messages, handleDownload, isDownloading }) => (
+const Header = ({ messages, handleShare }) => (
   <div className="flex justify-between items-center p-4">
     <Link to="/">
       <Cover>
@@ -64,12 +64,11 @@ const Header = ({ messages, handleDownload, isDownloading }) => (
     </Link>
     {messages.length > 0 && (
       <button
-        onClick={handleDownload}
-        disabled={isDownloading}
+        onClick={handleShare}
         className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-md flex items-center transition-colors duration-200 ease-in-out"
       >
-        <Download className="mr-2 h-4 w-4" />
-        {isDownloading ? 'Downloading...' : 'Save as PDF'}
+        <Share2 className="mr-2 h-4 w-4" />
+        Share
       </button>
     )}
   </div>
@@ -163,6 +162,7 @@ const ChatInput = ({ userQuery, setUserQuery, handleSubmit, handleClearChat, lin
           scrollbarWidth: 'none',
           msOverflowStyle: 'none'
         }}
+        disabled={isLoading}
       />
       <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center bg-neutral-800 p-2 rounded-md">
         <button
@@ -203,7 +203,7 @@ const Suggestions = ({ suggestions, setUserQuery }) => {
           className="bg-gray-700 bg-opacity-50 text-white px-3 py-1 rounded-md text-sm hover:bg-opacity-75 transition-colors focus:outline-none"
           onClick={() => handleSuggestionClick(suggestion)}
           type="button"
-          tabIndex="-1" // Prevent the button from receiving focus
+          tabIndex="-1"
         >
           {suggestion}
         </button>
@@ -214,13 +214,13 @@ const Suggestions = ({ suggestions, setUserQuery }) => {
 
 const PopupWarning = ({ showPopup, setShowPopup }) => (
   showPopup && (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-xl">
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+      <div className="bg-gray-800 p-6 rounded-lg shadow-xl">
         <div className="flex items-center mb-4">
           <AlertCircle className="text-red-500 mr-2" size={24} />
-          <h2 className="text-xl font-bold">Too Many Lines</h2>
+          <h2 className="text-xl font-bold text-white">Too Many Lines</h2>
         </div>
-        <p className="mb-4">Your message exceeds 100 lines. Please shorten it before sending.</p>
+        <p className="mb-4 text-gray-300">Your message exceeds 100 lines. Please shorten it before sending.</p>
         <button
           onClick={() => setShowPopup(false)}
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-200"
@@ -259,9 +259,9 @@ const ShareOptions = ({ pdfBlob, closeSharingOptions }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-xl">
-        <h2 className="text-xl font-bold mb-4">Share or Save PDF</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+      <div className="bg-gray-800 p-6 rounded-lg shadow-xl">
+        <h2 className="text-xl font-bold mb-4 text-white">Share or Save PDF</h2>
         <div className="space-y-4">
           <button
             onClick={handleGmailShare}
@@ -284,7 +284,7 @@ const ShareOptions = ({ pdfBlob, closeSharingOptions }) => {
         </div>
         <button
           onClick={closeSharingOptions}
-          className="mt-4 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+          className="mt-4 text-gray-400 hover:text-gray-200 transition-colors duration-200"
         >
           Cancel
         </button>
@@ -297,7 +297,6 @@ export default function Csgpt() {
   const [userQuery, setUserQuery] = useState("")
   const [messages, setMessages] = useState([])
   const [isLoading, setIsLoading] = useState(false)
-  const [isDownloading, setIsDownloading] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(true)
   const [showScrollDown, setShowScrollDown] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -315,12 +314,12 @@ export default function Csgpt() {
     "Explain data link layer",
     "Explain OSI Layers"
   ]
-  const router = useNavigate()
+  const navigate = useNavigate()
   
   useEffect(() => {
     const user = localStorage.getItem("Token")
     if (!user) {
-      router("/signup")
+      navigate("/signup")
     }
     
     const checkMobile = () => {
@@ -330,7 +329,7 @@ export default function Csgpt() {
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
-  }, [router])
+  }, [navigate])
   
   useEffect(() => {
     setShowSuggestions(messages.length === 0)
@@ -375,6 +374,7 @@ export default function Csgpt() {
     setMessages((prevMessages) => [...prevMessages, { type: "user", content: currentQuery }])
     setIsLoading(true)
     setShowSuggestions(false)
+    setUserQuery("")
     const token = localStorage.getItem("Token")
   
     try {
@@ -434,13 +434,11 @@ export default function Csgpt() {
       setMessages((prevMessages) => [...prevMessages, { type: "error", content: errorMessage }])
     } finally {
       setIsLoading(false)
-      setUserQuery("")
       setLineCount(0)
     }
   }
 
-  const handleDownload = async () => {
-    setIsDownloading(true)
+  const handleShare = async () => {
     setPdfError(null)
   
     const history = messages.reduce((acc, message, index, array) => {
@@ -479,8 +477,6 @@ export default function Csgpt() {
     } catch (error) {
       console.error("Error generating PDF:", error)
       setPdfError("There was an error generating the PDF. Please try again.")
-    } finally {
-      setIsDownloading(false)
     }
   }
 
@@ -527,12 +523,10 @@ export default function Csgpt() {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800 flex flex-col">
       <div className="absolute inset-0 z-0">
-        <ShootingStars />
-        <StarsBackground />
       </div>
       
       <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col h-screen">
-        <Header messages={messages} handleDownload={handleDownload} isDownloading={isDownloading} />
+        <Header messages={messages} handleShare={handleShare} />
         <div className="flex-grow overflow-hidden flex flex-col">
           <div 
             ref={chatContainerRef} 
@@ -585,23 +579,11 @@ export default function Csgpt() {
         {showSharingOptions && (
           <ShareOptions pdfBlob={pdfBlob} closeSharingOptions={closeSharingOptions} />
         )}
-        {isDownloading && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-xl">
-              <h2 className="text-xl font-bold mb-4">Generating PDF</h2>
-              <div className="flex justify-center items-center space-x-2">
-                <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"></div>
-                <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-                <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
-              </div>
-            </div>
-          </div>
-        )}
         {pdfError && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-xl">
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+            <div className="bg-gray-800 p-6 rounded-lg shadow-xl">
               <h2 className="text-xl font-bold mb-4 text-red-500">Error</h2>
-              <p>{pdfError}</p>
+              <p className="text-white">{pdfError}</p>
               <button
                 onClick={() => setPdfError(null)}
                 className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-200"

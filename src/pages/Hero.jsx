@@ -15,6 +15,7 @@ export default function Hero() {
   const [rating, setRating] = useState('0')
   const navigate = useNavigate()
   const timeoutRef = useRef(null);
+  const getStartedRef = useRef(null);
   const subjectsRef = useRef(null);
 
   useEffect(() => {
@@ -26,6 +27,16 @@ export default function Hero() {
     // Scroll to top on component mount
     window.scrollTo(0, 0);
 
+    // Set up timer for initial scroll to Get Started button
+    const initialScrollTimeout = setTimeout(() => {
+      if (getStartedRef.current) {
+        const windowHeight = window.innerHeight;
+        const buttonRect = getStartedRef.current.getBoundingClientRect();
+        const scrollTo = buttonRect.top + window.pageYOffset - (windowHeight / 2) + (buttonRect.height / 2);
+        window.scrollTo({ top: scrollTo, behavior: 'smooth' });
+      }
+    }, 2000);
+
     // Set up event listeners for user interaction
     const resetTimer = () => {
       if (timeoutRef.current) {
@@ -35,6 +46,7 @@ export default function Hero() {
     };
 
     const handleInteraction = () => {
+      clearTimeout(initialScrollTimeout);
       resetTimer();
     };
 
@@ -46,6 +58,7 @@ export default function Hero() {
     resetTimer(); // Initial timer setup
 
     return () => {
+      clearTimeout(initialScrollTimeout);
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
@@ -107,7 +120,7 @@ export default function Hero() {
     "Computer Networks",
     "Software Engineering",
     "Data Warehouse Mining",
-    "Information Technology",
+    "Internet Of Things",
     "Mobile Computing",
     "Cryptography and System Security"
   ];
@@ -148,11 +161,13 @@ export default function Hero() {
         <p className="mb-6 max-w-2xl text-lg text-gray-300 sm:text-xl">
           Search for anything with the power of AI
         </p>
-        <Link to="/csgpt">
-          <button className="inline-flex h-12 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-6 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50">
-            Get Started
-          </button>
-        </Link>
+        <div ref={getStartedRef}>
+          <Link to="/csgpt">
+            <button className="inline-flex h-12 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-6 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50">
+              Get Started
+            </button>
+          </Link>
+        </div>
 
         <div ref={subjectsRef} className="w-full max-w-4xl mx-auto mt-12 p-6 rounded-lg shadow-lg relative overflow-hidden">
           <div className="mb-12"><h3 className="text-4xl font-bold text-white px-3">SUPPORTED SUBJECTS</h3></div>  
@@ -171,7 +186,7 @@ export default function Hero() {
           </div>
         </div>
 
-        <style jsx>{`
+        <style>{`
           .pulsating-dot {
             width: 6px;
             height: 6px;
