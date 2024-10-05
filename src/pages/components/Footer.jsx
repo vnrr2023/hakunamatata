@@ -1,14 +1,12 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-const FAQItem = ({ question, answer }) => {
-  const [isOpen, setIsOpen] = useState(false)
-
+const FAQItem = ({ question, answer, isOpen, onClick }) => {
   return (
     <div className="border-b border-gray-200">
       <button
         className="flex justify-between items-center w-full py-4 text-left"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={onClick}
       >
         <span className="font-medium">{question}</span>
         <span className="transform transition-transform duration-200 ease-in-out">
@@ -25,6 +23,8 @@ const FAQItem = ({ question, answer }) => {
 }
 
 export default function Footer() {
+  const [openFAQ, setOpenFAQ] = useState(null)
+
   const faqs = [
     {
       question: "What is CSGPT?",
@@ -44,6 +44,10 @@ export default function Footer() {
     }
   ]
 
+  const handleFAQClick = (index) => {
+    setOpenFAQ(openFAQ === index ? null : index)
+  }
+
   return (
     <footer className="bg-gray-100 text-gray-600 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -61,7 +65,13 @@ export default function Footer() {
             <h3 className="text-xl font-semibold mb-4">Frequently Asked Questions</h3>
             <div className="space-y-2">
               {faqs.map((faq, index) => (
-                <FAQItem key={index} question={faq.question} answer={faq.answer} />
+                <FAQItem 
+                  key={index} 
+                  question={faq.question} 
+                  answer={faq.answer} 
+                  isOpen={openFAQ === index}
+                  onClick={() => handleFAQClick(index)}
+                />
               ))}
             </div>
           </div>
