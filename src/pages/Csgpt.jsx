@@ -233,17 +233,18 @@ const PopupWarning = ({ showPopup, setShowPopup }) => (
 )
 
 const ShareOptions = ({ pdfBlob, closeSharingOptions }) => {
-  const handleGmailShare = () => {
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&tf=1&su=CSGPT%20Chat%20History&body=${encodeURIComponent('Please find attached the CSGPT chat history.')}`
-    window.open(gmailUrl, '_blank')
+  const handleEmailShare = () => {
+    const emailUrl = `mailto:?subject=CSGPT Chat History&body=Please find attached the CSGPT chat history.`
+    const pdfUrl = URL.createObjectURL(pdfBlob)
+    window.open(emailUrl)
+    URL.revokeObjectURL(pdfUrl)
   }
 
   const handleWhatsAppShare = () => {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-    const whatsappUrl = isMobile
-      ? `whatsapp://send?text=${encodeURIComponent('Check out my CSGPT chat history!')}`
-      : 'https://web.whatsapp.com/'
+    const pdfUrl = URL.createObjectURL(pdfBlob)
+    const whatsappUrl = `https://wa.me/?text=Check out my CSGPT chat history! ${encodeURIComponent(pdfUrl)}`
     window.open(whatsappUrl, '_blank')
+    URL.revokeObjectURL(pdfUrl)
   }
 
   const handleLocalSave = () => {
@@ -264,10 +265,10 @@ const ShareOptions = ({ pdfBlob, closeSharingOptions }) => {
         <h2 className="text-xl font-bold mb-4 text-white">Share or Save PDF</h2>
         <div className="space-y-4">
           <button
-            onClick={handleGmailShare}
+            onClick={handleEmailShare}
             className="w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors duration-200 flex items-center justify-center"
           >
-            <Mail className="mr-2" /> Share via Gmail
+            <Mail className="mr-2" /> Share via Email
           </button>
           <button
             onClick={handleWhatsAppShare}
@@ -373,7 +374,7 @@ export default function Csgpt() {
     const currentQuery = userQuery
     setMessages((prevMessages) => [...prevMessages, { type: "user", content: currentQuery }])
     setIsLoading(true)
-    setShowSuggestions(false)
+    setShowSuggestions(false) // This line was incorrectly split before
     setUserQuery("")
     const token = localStorage.getItem("Token")
   
@@ -437,7 +438,6 @@ export default function Csgpt() {
       setLineCount(0)
     }
   }
-
   const handleShare = async () => {
     setPdfError(null)
   
@@ -523,6 +523,8 @@ export default function Csgpt() {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800 flex flex-col">
       <div className="absolute inset-0 z-0">
+        <StarsBackground />
+        <ShootingStars />
       </div>
       
       <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col h-screen">

@@ -163,9 +163,10 @@ export default function Hero() {
         </p>
         <div ref={getStartedRef}>
           <Link to="/csgpt">
-            <button className="inline-flex h-12 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-6 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50">
-              Get Started
-            </button>
+          <button className="inline-flex h-12 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-6 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50 hover:shadow-[0_0_10px_2px_rgba(255,255,255,0.7)] hover:border-transparent">
+  Get Started
+</button>
+
           </Link>
         </div>
 
@@ -281,9 +282,11 @@ export default function Hero() {
         <section className="relative z-10 py-16 px-4 text-center">
           <h2 className="mb-6 text-4xl font-bold text-white">Ready to Get Started?</h2>
           <p className="mb-8 text-lg text-gray-300">Join thousands of satisfied users and experience the future of search technology.</p>
-          <button className="inline-flex h-12 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-8 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50 text-lg">
-            <Link to="/csgpt">Try CSGPT Now</Link>
-          </button>
+            <Link to="/csgpt">
+            <button className="inline-flex h-12 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-6 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50 hover:shadow-[0_0_10px_2px_rgba(255,255,255,0.7)] hover:border-transparent">
+ TRY CSGPT NOW
+</button>
+            </Link>
         </section>
 
         <section className="relative z-10 py-16 px-4 text-center max-w-2xl mx-auto">
@@ -341,11 +344,12 @@ export default function Hero() {
               </div>
             </div>
             <button
-              type="submit"
-              className="w-full h-12 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-8 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
-            >
-              Submit Feedback
-            </button>
+  type="submit"
+  className="w-full h-12 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-8 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50 hover:shadow-[0_0_10px_2px_rgba(255,255,255,0.7)] hover:border-transparent"
+>
+  Submit Feedback
+</button>
+
           </form>
         </section>
       </div>

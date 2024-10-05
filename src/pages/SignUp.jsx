@@ -11,29 +11,33 @@ export default function SignUp() {
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [isGoogleScriptLoaded, setIsGoogleScriptLoaded] = useState(false)
 
   useEffect(() => {
-    const initializeGoogleSignIn = () => {
-      if (typeof google !== 'undefined' && google.accounts) {
-        google.accounts.id.initialize({
-          client_id: import.meta.env.VITE_GOOGLE_KEY,
-          callback: handleCallbackResponse
-        })
-        google.accounts.id.renderButton(
-          document.getElementById("googleSignInDiv"),
-          { theme: "outline", size: "large" }
-        )
-      } else {
-        console.error("Google Sign-In API not loaded")
-        setError("Failed to load Google Sign-In. Please try again later.")
-      }
+    const loadGoogleScript = () => {
+      const script = document.createElement('script')
+      script.src = 'https://accounts.google.com/gsi/client'
+      script.async = true
+      script.defer = true
+      script.onload = () => setIsGoogleScriptLoaded(true)
+      document.body.appendChild(script)
     }
-    initializeGoogleSignIn()
 
-    const retryTimeout = setTimeout(initializeGoogleSignIn, 1000)
-
-    return () => clearTimeout(retryTimeout)
+    loadGoogleScript()
   }, [])
+
+  useEffect(() => {
+    if (isGoogleScriptLoaded && typeof google !== 'undefined' && google.accounts) {
+      google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_KEY,
+        callback: handleCallbackResponse
+      })
+      google.accounts.id.renderButton(
+        document.getElementById("googleSignInDiv"),
+        { theme: "outline", size: "large" }
+      )
+    }
+  }, [isGoogleScriptLoaded])
 
   const handleCallbackResponse = (response) => {
     setIsLoading(true)
@@ -57,11 +61,41 @@ export default function SignUp() {
       })
       .catch(err => {
         console.error("Error in Google login: ", err)
-        setError(err.message || "An unexpected error occurred. Please try again.")
+        setError("An unexpected error occurred. Please try again.")
       })
       .finally(() => {
         setIsLoading(false)
       })
+  }
+
+  const renderGoogleButton = () => {
+    if (isLoading) {
+      return (
+        <button
+          type="button"
+          className="flex items-center justify-center px-6 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 cursor-not-allowed"
+          disabled
+        >
+          <IconLoader2 className="h-6 w-6 mr-2 animate-spin" />
+          Signing in...
+        </button>
+      )
+    }
+
+    if (!isGoogleScriptLoaded) {
+      return (
+        <button
+          type="button"
+          className="flex items-center justify-center px-6 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
+          disabled
+        >
+          <IconBrandGoogle className="h-6 w-6 mr-2" />
+          Sign in with Google
+        </button>
+      )
+    }
+
+    return <div id="googleSignInDiv"></div>
   }
 
   return (
@@ -83,25 +117,8 @@ export default function SignUp() {
                 <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Welcome</h2>
                 <p className="text-gray-600 dark:text-gray-300">Sign in to your account</p>
               </div>
-              <div id="googleSignInDiv" className="flex justify-center">
-                {isLoading ? (
-                  <button
-                    type="button"
-                    className="flex items-center justify-center px-6 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 cursor-not-allowed"
-                    disabled
-                  >
-                    <IconLoader2 className="h-6 w-6 mr-2 animate-spin" />
-                    Signing in...
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="flex items-center justify-center px-6 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
-                  >
-                    <IconBrandGoogle className="h-6 w-6 mr-2" />
-                    Sign in with Google
-                  </button>
-                )}
+              <div className="flex justify-center">
+                {renderGoogleButton()}
               </div>
               {error && (
                 <div className="text-red-500 text-center text-sm">

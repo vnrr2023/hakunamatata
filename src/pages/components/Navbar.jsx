@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
-import { Bars3BottomRightIcon, XMarkIcon } from '@heroicons/react/24/solid';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react'
+import { LogIn, LogOut, Menu, X } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
 import { Cover } from "../../components/ui/cover"
 
 export default function Navbar() {
@@ -8,58 +8,58 @@ export default function Navbar() {
         { name: 'Home', link: '/' },
         { name: 'CSGPT', link: '/csgpt' },
         { name: 'Get Started', link: '/csgpt' },
-    ];
+    ]
 
-    const [isOpen, setIsOpen] = useState(false);
-    const [navBackground, setNavBackground] = useState('bg-transparent');
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [showModal, setShowModal] = useState(false);
-    const dropdownRef = useRef(null);
-    const navigate = useNavigate();
+    const [isOpen, setIsOpen] = useState(false)
+    const [navBackground, setNavBackground] = useState('bg-transparent')
+    const [isLoggedIn, setIsLoggedIn] = useState(false)
+    const [showModal, setShowModal] = useState(false)
+    const dropdownRef = useRef(null)
+    const navigate = useNavigate()
 
     useEffect(() => {
         const handleScroll = () => {
             if (window.scrollY > 50) {
-                setNavBackground('bg-black/70');
+                setNavBackground('bg-black/70')
             } else {
-                setNavBackground('bg-transparent');
+                setNavBackground('bg-transparent')
             }
-        };
+        }
 
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setIsOpen(false);
+                setIsOpen(false)
             }
-        };
+        }
 
         const checkLoginStatus = () => {
-            const token = localStorage.getItem("Token");
-            setIsLoggedIn(!!token);
-        };
+            const token = localStorage.getItem("Token")
+            setIsLoggedIn(!!token)
+        }
 
-        window.addEventListener('scroll', handleScroll);
-        document.addEventListener('mousedown', handleClickOutside);
-        window.addEventListener('storage', checkLoginStatus);
+        window.addEventListener('scroll', handleScroll)
+        document.addEventListener('mousedown', handleClickOutside)
+        window.addEventListener('storage', checkLoginStatus)
 
-        checkLoginStatus();
+        checkLoginStatus()
 
         return () => {
-            window.removeEventListener('scroll', handleScroll);
-            document.removeEventListener('mousedown', handleClickOutside);
-            window.removeEventListener('storage', checkLoginStatus);
-        };
-    }, []);
+            window.removeEventListener('scroll', handleScroll)
+            document.removeEventListener('mousedown', handleClickOutside)
+            window.removeEventListener('storage', checkLoginStatus)
+        }
+    }, [])
 
     const handleLogout = () => {
-        setShowModal(true);
-    };
+        setShowModal(true)
+    }
 
     const confirmLogout = () => {
-        localStorage.removeItem("Token");
-        setIsLoggedIn(false);
-        setShowModal(false);
-        navigate('/');
-    };
+        localStorage.removeItem("Token")
+        setIsLoggedIn(false)
+        setShowModal(false)
+        navigate('/')
+    }
 
     return (
         <>
@@ -67,10 +67,10 @@ export default function Navbar() {
                 <div className="md:px-10 py-4 px-7 flex justify-between items-center">
                     <div>
                         <Link to="/">
-                        <Cover>
+                            <Cover>
                                 <span className="font-bold text-gray-400">CS</span>
                                 <span className="font-bold text-gray-600">GPT</span>
-                        </Cover>
+                            </Cover>
                         </Link>
                     </div>
                     <ul className="hidden md:flex md:items-center">
@@ -81,11 +81,17 @@ export default function Navbar() {
                         ))}
                         {isLoggedIn ? (
                             <li className="font-semibold text-gray-400 hover:text-white md:ml-8">
-                                <button onClick={handleLogout}>SignOut</button>
+                                <button onClick={handleLogout} className="flex items-center">
+                                    <LogOut className="mr-2 h-4 w-4" />
+                                    Sign Out
+                                </button>
                             </li>
                         ) : (
                             <li className="font-semibold text-gray-400 hover:text-white md:ml-8">
-                                <Link to="/signup">SignIn</Link>
+                                <Link to="/signup" className="flex items-center">
+                                    <LogIn className="mr-2 h-4 w-4" />
+                                    Sign In
+                                </Link>
                             </li>
                         )}
                     </ul>
@@ -96,7 +102,7 @@ export default function Navbar() {
                             className="bg-gray-200 p-1 rounded-sm w-7 h-7 flex items-center justify-center"
                             aria-label="Toggle menu"
                         >
-                            {isOpen ? <XMarkIcon className="w-5 h-5" /> : <Bars3BottomRightIcon className="w-5 h-5" />}
+                            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                         </button>
 
                         {isOpen && (
@@ -114,11 +120,12 @@ export default function Navbar() {
                                 {isLoggedIn ? (
                                     <button
                                         onClick={() => {
-                                            setIsOpen(false);
-                                            handleLogout();
+                                            setIsOpen(false)
+                                            handleLogout()
                                         }}
                                         className="block w-full text-left px-6 py-3 text-sm text-gray-300 hover:bg-black/50 hover:text-white transition-colors duration-200"
                                     >
+                                        <LogOut className="inline-block mr-2 h-4 w-4" />
                                         Sign Out
                                     </button>
                                 ) : (
@@ -127,6 +134,7 @@ export default function Navbar() {
                                         className="block px-6 py-3 text-sm text-gray-300 hover:bg-black/50 hover:text-white transition-colors duration-200"
                                         onClick={() => setIsOpen(false)}
                                     >
+                                        <LogIn className="inline-block mr-2 h-4 w-4" />
                                         Sign In
                                     </Link>
                                 )}
@@ -139,7 +147,7 @@ export default function Navbar() {
             {showModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
                     <div className="bg-black bg-opacity-80 rounded-lg p-8 max-w-sm w-full">
-                        <h2 className="text-2xl text-white font-bold mb-4">Confirm SignOut</h2>
+                        <h2 className="text-2xl text-white font-bold mb-4">Confirm Sign Out</h2>
                         <p className="text-white mb-6">Are you sure you want to Sign Out?</p>
                         <div className="flex justify-end space-x-4">
                             <button
@@ -152,12 +160,12 @@ export default function Navbar() {
                                 onClick={confirmLogout}
                                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                             >
-                                SignOut
+                                Sign Out
                             </button>
                         </div>
                     </div>
                 </div>
             )}
         </>
-    );
+    )
 }
