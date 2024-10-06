@@ -523,8 +523,6 @@ export default function Csgpt() {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800 flex flex-col">
       <div className="absolute inset-0 z-0">
-        <StarsBackground />
-        <ShootingStars />
       </div>
       
       <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col h-screen">
