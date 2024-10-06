@@ -296,7 +296,7 @@ export default function Hero() {
         </div>
 
         <RevealOnScroll>
-          <section className="relative z-10 py-16 px-4 text-center bg-gradient-to-br from-gray-900 to-black rounded-lg shadow-2xl max-w-6xl mx-auto">
+          <section className="relative z-10 py-16 px-4 text-center bg-gradient-to-br from-black-900 to-black rounded-lg shadow-2xl max-w-6xl mx-auto">
             <h2 className="mb-8 text-4xl font-bold text-white">About CSGPT</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="text-left space-y-6">
