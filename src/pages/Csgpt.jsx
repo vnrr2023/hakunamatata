@@ -120,8 +120,9 @@ const ChatMessage = ({ message, handleCopy }) => (
   </div>
 )
 
-const ChatInput = ({ userQuery, setUserQuery, handleSubmit, handleClearChat, lineCount, isLoading, isMobile }) => {
+const ChatInput = ({ userQuery, setUserQuery, handleSubmit, handleClearChat, isLoading, isMobile }) => {
   const textareaRef = useRef(null)
+  const [lineCount, setLineCount] = useState(0)
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -132,7 +133,29 @@ const ChatInput = ({ userQuery, setUserQuery, handleSubmit, handleClearChat, lin
       // Focus the textarea
       textareaRef.current.focus()
     }
+    updateLineCount()
   }, [userQuery])
+
+  const updateLineCount = () => {
+    if (textareaRef.current) {
+      const textarea = textareaRef.current
+      const text = textarea.value
+      const lines = text.split('\n')
+      const wrappedLines = Math.floor(textarea.scrollHeight / parseInt(getComputedStyle(textarea).lineHeight)-3)
+      setLineCount(Math.max(lines.length, wrappedLines))
+    }
+  }
+
+  const handleChange = (event) => {
+    setUserQuery(event.target.value)
+  }
+
+  const handlePaste = (event) => {
+    // Allow the default paste behavior
+    setTimeout(() => {
+      updateLineCount()
+    }, 0)
+  }
 
   const handleKeyDown = (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
@@ -144,7 +167,8 @@ const ChatInput = ({ userQuery, setUserQuery, handleSubmit, handleClearChat, lin
   const handleSubmitAndClear = (event) => {
     event.preventDefault()
     handleSubmit(event)
-    setUserQuery('')  // Clear the textarea immediately after submission
+    setUserQuery('')
+    setLineCount(0)
   }
 
   return (
@@ -152,7 +176,8 @@ const ChatInput = ({ userQuery, setUserQuery, handleSubmit, handleClearChat, lin
       <textarea
         ref={textareaRef}
         value={userQuery}
-        onChange={(e) => setUserQuery(e.target.value)}
+        onChange={handleChange}
+        onPaste={handlePaste}
         onKeyDown={handleKeyDown}
         className="w-full p-3 pb-12 rounded-md text-white bg-transparent border border-white border-opacity-30 focus:outline-none focus:ring-1 focus:ring-white focus:ring-opacity-50 resize-none overflow-y-auto scrollbar-hide"
         placeholder="Ask me anything..."
@@ -160,7 +185,8 @@ const ChatInput = ({ userQuery, setUserQuery, handleSubmit, handleClearChat, lin
         style={{
           maxHeight: 'calc(50vh - 40px)',
           scrollbarWidth: 'none',
-          msOverflowStyle: 'none'
+          msOverflowStyle: 'none',
+          lineHeight: '1.5'
         }}
         disabled={isLoading}
       />
@@ -374,7 +400,7 @@ export default function Csgpt() {
     const currentQuery = userQuery
     setMessages((prevMessages) => [...prevMessages, { type: "user", content: currentQuery }])
     setIsLoading(true)
-    setShowSuggestions(false) // This line was incorrectly split before
+    setShowSuggestions(false) 
     setUserQuery("")
     const token = localStorage.getItem("Token")
   
