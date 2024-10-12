@@ -575,8 +575,8 @@ export default function Csgpt() {
     const preferredVoices = [
       // Microsoft Mark - English (United States)
       voices.find(voice => voice.name === "Microsoft Mark - English (United States)"),
-      // Any Microsoft voice
-      voices.find(voice => voice.name.startsWith("Microsoft")),
+      // Google US English Male
+      voices.find(voice => voice.name === "Google US English Male"),
       // Any English male voice
       voices.find(voice => voice.lang.startsWith('en') && voice.name.toLowerCase().includes('male')),
       // Any English voice
@@ -604,6 +604,18 @@ export default function Csgpt() {
       const preferredVoice = getPreferredVoice()
       if (preferredVoice) {
         utterance.voice = preferredVoice
+      }
+
+      // Force a specific voice for mobile devices
+      if (isMobile) {
+        const mobileVoice = voices.find(voice => 
+          voice.name === "Google US English" || 
+          voice.name === "Samsung English Female" ||
+          voice.lang === "en-US"
+        )
+        if (mobileVoice) {
+          utterance.voice = mobileVoice
+        }
       }
 
       utterance.rate = 0.9
