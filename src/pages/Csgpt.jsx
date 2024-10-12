@@ -4,10 +4,17 @@ import { StarsBackground } from "../components/ui/stars-background"
 import ReactMarkdown from 'react-markdown'
 import { Cover } from "../components/ui/cover"
 import { Link } from "react-router-dom"
-import { ChevronDown, Download, Trash2, Send, Copy, AlertCircle, Mail, Share2, Volume2 } from "lucide-react"
+import { ChevronDown, Download, Trash2, Send, Copy, AlertCircle, Mail, Share2, Volume2, VolumeX } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { pdf, Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
 import { google_ngrok_url } from "./SignUp"
+import meSpeak from 'mespeak'
+import meSpeakConfig from 'mespeak/src/mespeak_config.json';
+import meSpeakVoice from 'mespeak/voices/en/en-us.json';
+
+// Initialize meSpeak
+meSpeak.loadConfig(meSpeakConfig);
+meSpeak.loadVoice(meSpeakVoice);
 
 Font.register({
   family: 'Roboto',
@@ -74,7 +81,7 @@ const Header = ({ messages, handleShare }) => (
   </div>
 )
 
-const ChatMessage = ({ message, handleCopy, handleSpeak }) => {
+const ChatMessage = ({ message, handleCopy, handleSpeak, isSpeaking }) => {
   return (
     <div className={`flex items-start ${message.type === "user" ? "justify-end" : "justify-start"}`}>
       {message.type === "ai" && (
@@ -109,10 +116,10 @@ const ChatMessage = ({ message, handleCopy, handleSpeak }) => {
             <button
               onClick={() => handleSpeak(message.content)}
               className="mt-2 text-gray-400 hover:text-white transition-colors duration-200 opacity-70 text-sm flex items-center"
-              title="Read aloud"
+              title={isSpeaking ? "Stop reading" : "Read aloud"}
             >
-              <Volume2 size={14} className="mr-1" />
-              Read aloud
+              {isSpeaking ? <VolumeX size={14} className="mr-1" /> : <Volume2 size={14} className="mr-1" />}
+              {isSpeaking ? "Stop reading" : "Read aloud"}
             </button>
           </>
         ) : message.type === "error" ? (
@@ -121,10 +128,10 @@ const ChatMessage = ({ message, handleCopy, handleSpeak }) => {
             <button
               onClick={() => handleSpeak(message.content)}
               className="mt-2 text-gray-400 hover:text-white transition-colors duration-200 opacity-70 text-sm flex items-center"
-              title="Read aloud"
+              title={isSpeaking ? "Stop reading" : "Read aloud"}
             >
-              <Volume2 size={14} className="mr-1" />
-              Read aloud
+              {isSpeaking ? <VolumeX size={14} className="mr-1" /> : <Volume2 size={14} className="mr-1" />}
+              {isSpeaking ? "Stop reading" : "Read aloud"}
             </button>
           </>
         ) : (
@@ -329,7 +336,8 @@ export default function Csgpt() {
   const chatContainerRef = useRef(null)
   const [pdfBlob, setPdfBlob] = useState(null)
   const [pdfError, setPdfError] = useState(null)
-  const [showSharingOptions, setShowSharingOptions] = useState(false)
+  const  [showSharingOptions, setShowSharingOptions] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
 
   const suggestions = [
     "Explain DNS with text diagram.",
@@ -351,8 +359,7 @@ export default function Csgpt() {
     
     checkMobile()
     window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', 
-    checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
   }, [navigate])
   
   useEffect(() => {
@@ -528,43 +535,46 @@ export default function Csgpt() {
   }
 
   const handleSpeak = (content) => {
-    const plainText = content.replace(/```[\s\S]*?```/g, '').replace(/`/g, '')
-    const utterance = new SpeechSynthesisUtterance(plainText)
-  
-    // Function to set the male voice
-    const setMaleVoice = () => {
-      const voices = window.speechSynthesis.getVoices()
-      const maleVoice = voices.find(voice => 
-        voice.name.toLowerCase().includes('male') || 
-        (voice.name.includes('Google') && voice.lang.startsWith('en-') && !voice.name.toLowerCase().includes('female'))
-      )
-      if (maleVoice) {
-        utterance.voice = maleVoice
-      } else {
-        // If no male voice is found, adjust pitch to simulate a male voice
-        utterance.pitch = 0.8
+    if (isSpeaking) {
+      meSpeak.stop()
+      setIsSpeaking(false)
+    } else {
+      const plainText = content.replace(/```[\s\S]*?```/g, '').replace(/`/g, '')
+      
+      // Configure meSpeak for a male voice
+      const voice = {
+        amplitude: 100,
+        pitch: 50,
+        speed: 175,
+        wordgap: 0,
+        variant: "m2",
       }
+
+      // Split the text into sentences
+      const sentences = plainText.match(/[^\.!\?]+[\.!\?]+/g) || [plainText]
+
+      let sentenceIndex = 0
+      const speakNextSentence = () => {
+        if (sentenceIndex < sentences.length) {
+          meSpeak.speak(sentences[sentenceIndex].trim(), voice, () => {
+            sentenceIndex++
+            speakNextSentence()
+          })
+        } else {
+          setIsSpeaking(false)
+        }
+      }
+
+      setIsSpeaking(true)
+      speakNextSentence()
     }
-
-    // Set voice immediately if voices are already loaded
-    setMaleVoice()
-
-    // If voices haven't loaded yet, wait for them
-    if (speechSynthesis.onvoiceschanged !== undefined) {
-      speechSynthesis.onvoiceschanged = setMaleVoice
-    }
-
-    // Adjust rate for a natural tone
-    utterance.rate = 0.9
-
-    window.speechSynthesis.speak(utterance)
   }
 
   const convertMarkdownToPlainText = (markdown) => {
     let text = markdown.replace(/#{1,6}\s?/g, '')
     text = text.replace(/(\*\*|__)(.*?)\1/g, '$2')
     text = text.replace(/(\*|_)(.*?)\1/g, '$2')
-    text = text.replace(/\[([^\]]+)\]$$([^$$]+)\)/g, '$1 ($2)')
+    text = text.replace(/\[([^\]]+)\]$$[^$$]+\)/g, '$1')
     text = text.replace(/```[\s\S]*?```/g, (match) => {
       return match.replace(/```/g, '').trim()
     })
@@ -593,7 +603,13 @@ export default function Csgpt() {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {messages.map((message, index) => (
-              <ChatMessage key={index} message={message} handleCopy={handleCopy} handleSpeak={handleSpeak} />
+              <ChatMessage 
+                key={index} 
+                message={message} 
+                handleCopy={handleCopy} 
+                handleSpeak={handleSpeak}
+                isSpeaking={isSpeaking}
+              />
             ))}
             {isLoading && (
               <div className="flex justify-center items-center space-x-2">
