@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react"
 import ReactMarkdown from 'react-markdown'
 import { Cover } from "../components/ui/cover"
 import { Link } from "react-router-dom"
-import { ChevronDown, Download, Trash2, Send, Copy, AlertCircle, Mail, Share2, Volume2 } from "lucide-react"
+import { ChevronDown, Download, Trash2, Send, Copy, AlertCircle, Mail, Share2, Volume2, ThumbsUp, ThumbsDown } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { pdf, Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
 import { google_ngrok_url } from "./SignUp"
@@ -72,7 +72,19 @@ const Header = ({ messages, handleShare }) => (
   </div>
 )
 
-const ChatMessage = ({ message, handleCopy, handleSpeak }) => {
+const ChatMessage = ({ message, handleCopy, handleSpeak, isLoading, handleFeedback }) => {
+  const [isSpeaking, setIsSpeaking] = useState(false)
+
+  const toggleSpeak = () => {
+    if (isSpeaking) {
+      handleSpeak(null) // Stop speaking
+      setIsSpeaking(false)
+    } else {
+      handleSpeak(message.content)
+      setIsSpeaking(true)
+    }
+  }
+
   return (
     <div className={`flex items-start ${message.type === "user" ? "justify-end" : "justify-start"}`}>
       {message.type === "ai" && (
@@ -104,14 +116,31 @@ const ChatMessage = ({ message, handleCopy, handleSpeak }) => {
             >
               {message.content}
             </ReactMarkdown>
-            <button
-              onClick={() => handleSpeak(message.content)}
-              className="mt-2 text-gray-400 hover:text-white transition-colors duration-200 opacity-70 text-sm flex items-center"
-              title="Read aloud"
-            >
-              <Volume2 size={14} className="mr-1" />
-              Read aloud
-            </button>
+            <div className="flex items-center mt-2">
+              <button
+                onClick={toggleSpeak}
+                className="text-gray-400 hover:text-white transition-colors duration-200 opacity-70 text-sm flex items-center mr-4"
+                title={isSpeaking ? "Stop reading" : "Read aloud"}
+                disabled={isLoading}
+              >
+                <Volume2 size={14} className="mr-1" />
+                {isSpeaking ? "Stop" : "Read aloud"}
+              </button>
+              <button
+                onClick={() => handleFeedback(1)}
+                className="text-gray-400 hover:text-white transition-colors duration-200 opacity-70 text-sm flex items-center mr-2"
+                title="Like"
+              >
+                <ThumbsUp size={14} className="mr-1" />
+              </button>
+              <button
+                onClick={() => handleFeedback(0)}
+                className="text-gray-400 hover:text-white transition-colors duration-200 opacity-70 text-sm flex items-center"
+                title="Dislike"
+              >
+                <ThumbsDown size={14} className="mr-1" />
+              </button>
+            </div>
           </>
         ) : message.type === "error" ? (
           <>
@@ -120,6 +149,7 @@ const ChatMessage = ({ message, handleCopy, handleSpeak }) => {
               onClick={() => handleSpeak(message.content)}
               className="mt-2 text-gray-400 hover:text-white transition-colors duration-200 opacity-70 text-sm flex items-center"
               title="Read aloud"
+              disabled={isLoading}
             >
               <Volume2 size={14} className="mr-1" />
               Read aloud
@@ -327,6 +357,10 @@ export default function Csgpt() {
   const [pdfBlob, setPdfBlob] = useState(null)
   const [pdfError, setPdfError] = useState(null)
   const [showSharingOptions, setShowSharingOptions] = useState(false)
+  const [speechSynthesis, setSpeechSynthesis] = useState(null)
+  const [voices, setVoices] = useState([])
+  const [currentlySpeaking, setCurrentlySpeaking] = useState(null)
+
 
   const suggestions = [
     "Explain DNS with text diagram.",
@@ -348,13 +382,28 @@ export default function Csgpt() {
     
     checkMobile()
     window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', 
-    checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
   }, [navigate])
   
   useEffect(() => {
     setShowSuggestions(messages.length === 0)
   }, [messages])
+
+  useEffect(() => {
+    const synth = window.speechSynthesis
+    
+    setSpeechSynthesis(synth)
+
+    const loadVoices = () => {
+      const availableVoices = synth.getVoices()
+      setVoices(availableVoices)
+    }
+
+    loadVoices()
+    if (synth.onvoiceschanged !== undefined) {
+      synth.onvoiceschanged = loadVoices
+    }
+  }, [])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -415,7 +464,6 @@ export default function Csgpt() {
       }
   
       const data = await response.json()
-  
   
       if (!data || typeof data !== 'object') {
         throw new Error("Invalid response format: Response is not an object")
@@ -523,32 +571,76 @@ export default function Csgpt() {
       })
   }
 
+  const getPreferredVoice = () => {
+    const preferredVoices = [
+      // Microsoft Mark - English (United States)
+      voices.find(voice => voice.name === "Microsoft Mark - English (United States)"),
+      // Any Microsoft voice
+      voices.find(voice => voice.name.startsWith("Microsoft")),
+      // Any English male voice
+      voices.find(voice => voice.lang.startsWith('en') && voice.name.toLowerCase().includes('male')),
+      // Any English voice
+      voices.find(voice => voice.lang.startsWith('en')),
+      // Final fallback to any available voice
+      voices[0]
+    ]
+
+    return preferredVoices.find(voice => voice !== undefined)
+  }
+
   const handleSpeak = (content) => {
-    const plainText = content.replace(/```[\s\S]*?```/g, '').replace(/`/g, '')
-    const utterance = new SpeechSynthesisUtterance(plainText)
-  
-    const setMaleVoice = () => {
-      const voices = window.speechSynthesis.getVoices()
-      const maleVoice = voices.find(voice => 
-        voice.name.toLowerCase().includes('male') || 
-        (voice.name.includes('Google') && voice.lang.startsWith('en-') && !voice.name.toLowerCase().includes('female'))
-      )
-      if (maleVoice) {
-        utterance.voice = maleVoice
-      } else {
-        utterance.pitch = 0.8
+    if (!speechSynthesis) return
+
+    if (currentlySpeaking) {
+      speechSynthesis.cancel()
+      setCurrentlySpeaking(null)
+      return
+    }
+
+    if (content) {
+      const plainText = content.replace(/```[\s\S]*?```/g, '').replace(/`/g, '')
+      const utterance = new SpeechSynthesisUtterance(plainText)
+
+      const preferredVoice = getPreferredVoice()
+      if (preferredVoice) {
+        utterance.voice = preferredVoice
       }
+
+      utterance.rate = 0.9
+      utterance.pitch = 1
+
+      utterance.onend = () => {
+        setCurrentlySpeaking(null)
+      }
+
+      setCurrentlySpeaking(content)
+      speechSynthesis.speak(utterance)
     }
+  }
 
-    setMaleVoice()
+  const handleFeedback = async (feedback) => {
+    const token = localStorage.getItem("Token")
+    try {
+      const response = await fetch(`${google_ngrok_url}/app/feedback/`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          "Response Feedback": feedback
+        }),
+      })
 
-    if (speechSynthesis.onvoiceschanged !== undefined) {
-      speechSynthesis.onvoiceschanged = setMaleVoice
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      console.log("Feedback sent successfully:", data)
+    } catch (error) {
+      console.error("Error sending feedback:", error)
     }
-
-    utterance.rate = 0.9
-
-    window.speechSynthesis.speak(utterance)
   }
 
   const convertMarkdownToPlainText = (markdown) => {
@@ -570,30 +662,37 @@ export default function Csgpt() {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800 flex flex-col">
-      <div className="absolute inset-0 z-0">
-      </div>
-      
-      <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col h-screen">
-        <Header messages={messages} handleShare={handleShare} />
-        <div className="flex-grow overflow-hidden flex flex-col">
-          <div 
-            ref={chatContainerRef} 
-            className="flex-grow overflow-y-auto p-4 space-y-6 scrollbar-hide"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {messages.map((message, index) => (
-              <ChatMessage key={index} message={message} handleCopy={handleCopy} handleSpeak={handleSpeak} />
-            ))}
-            {isLoading && (
-              <div className="flex justify-center items-center space-x-2">
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
+    <div className="absolute inset-0 z-0">
+    </div>
+    
+    <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col h-screen">
+      <Header messages={messages} handleShare={handleShare} />
+      <div className="flex-grow overflow-hidden flex flex-col">
+        <div 
+          ref={chatContainerRef} 
+          className="flex-grow overflow-y-auto p-4 space-y-6 scrollbar-hide"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {messages.map((message, index) => (
+            <ChatMessage 
+              key={index} 
+              message={message} 
+              handleCopy={handleCopy} 
+              handleSpeak={handleSpeak}
+              isLoading={isLoading}
+              handleFeedback={handleFeedback}
+            />
+          ))}
+          {isLoading && (
+            <div className="flex justify-center items-center space-x-2">
+              <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+              <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+              <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
         </div>
+      </div>
 
         {showScrollDown && (
           <button
