@@ -4,7 +4,7 @@ import { StarsBackground } from "../components/ui/stars-background"
 import ReactMarkdown from 'react-markdown'
 import { Cover } from "../components/ui/cover"
 import { Link } from "react-router-dom"
-import { ChevronDown, Download, Trash2, Send, Copy, AlertCircle, Mail, Share2 } from "lucide-react"
+import { ChevronDown, Download, Trash2, Send, Copy, AlertCircle, Mail, Share2, Volume2 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { pdf, Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
 import { google_ngrok_url } from "./SignUp"
@@ -74,55 +74,76 @@ const Header = ({ messages, handleShare }) => (
   </div>
 )
 
-const ChatMessage = ({ message, handleCopy }) => (
-  <div className={`flex items-start ${message.type === "user" ? "justify-end" : "justify-start"}`}>
-    {message.type === "ai" && (
-      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-transparent flex items-center justify-center mr-2">
-        <img src="/logo.png" alt="CSGPT Logo" width={32} height={32} />
-      </div>
-    )}
-    <div className={`max-w-[85%] text-white ${message.type === "user" ? "text-right" : "text-left"}`}>
-      {message.type === "ai" ? (
-        <ReactMarkdown
-          components={{
-            p: ({ node, ...props }) => <p className="mb-2" {...props} />,
-            ul: ({ node, ...props }) => <ul className="list-disc pl-4 mb-2" {...props} />,
-            ol: ({ node, ...props }) => <ol className="list-decimal pl-4 mb-2" {...props} />,
-            li: ({ node, ...props }) => <li className="mb-1" {...props} />,
-            h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mb-2" {...props} />,
-            h2: ({ node, ...props }) => <h2 className="text-xl font-bold mb-2" {...props} />,
-            h3: ({ node, ...props }) => <h3 className="text-lg font-bold mb-2" {...props} />,
-            code: ({ node, inline, ...props }) => 
-              inline ? (
-                <code className="bg-gray-800 rounded px-1" {...props} />
-              ) : (
-                <pre className="bg-gray-800 rounded p-2 overflow-x-auto">
-                  <code {...props} />
-                </pre>
-              ),
-          }}
-        >
-          {message.content}
-        </ReactMarkdown>
-      ) : message.type === "error" ? (
-        <span className="text-red-500">{message.content}</span>
-      ) : (
-        message.content
+const ChatMessage = ({ message, handleCopy, handleSpeak }) => {
+  return (
+    <div className={`flex items-start ${message.type === "user" ? "justify-end" : "justify-start"}`}>
+      {message.type === "ai" && (
+        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-transparent flex items-center justify-center mr-2">
+          <img src="/logo.png" alt="CSGPT Logo" width={32} height={32} />
+        </div>
       )}
+      <div className={`max-w-[85%] text-white ${message.type === "user" ? "text-right" : "text-left"}`}>
+        {message.type === "ai" ? (
+          <>
+            <ReactMarkdown
+              components={{
+                p: ({ node, ...props }) => <p className="mb-2" {...props} />,
+                ul: ({ node, ...props }) => <ul className="list-disc pl-4 mb-2" {...props} />,
+                ol: ({ node, ...props }) => <ol className="list-decimal pl-4 mb-2" {...props} />,
+                li: ({ node, ...props }) => <li className="mb-1" {...props} />,
+                h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mb-2" {...props} />,
+                h2: ({ node, ...props }) => <h2 className="text-xl font-bold mb-2" {...props} />,
+                h3: ({ node, ...props }) => <h3 className="text-lg font-bold mb-2" {...props} />,
+                code: ({ node, inline, ...props }) => 
+                  inline ? (
+                    <code className="bg-gray-800 rounded px-1" {...props} />
+                  ) : (
+                    <pre className="bg-gray-800 rounded p-2 overflow-x-auto">
+                      <code {...props} />
+                    </pre>
+                  ),
+              }}
+            >
+              {message.content}
+            </ReactMarkdown>
+            <button
+              onClick={() => handleSpeak(message.content)}
+              className="mt-2 text-gray-400 hover:text-white transition-colors duration-200 opacity-70 text-sm flex items-center"
+              title="Read aloud"
+            >
+              <Volume2 size={14} className="mr-1" />
+              Read aloud
+            </button>
+          </>
+        ) : message.type === "error" ? (
+          <>
+            <span className="text-red-500">{message.content}</span>
+            <button
+              onClick={() => handleSpeak(message.content)}
+              className="mt-2 text-gray-400 hover:text-white transition-colors duration-200 opacity-70 text-sm flex items-center"
+              title="Read aloud"
+            >
+              <Volume2 size={14} className="mr-1" />
+              Read aloud
+            </button>
+          </>
+        ) : (
+          message.content
+        )}
+      </div>
+      <button
+        onClick={() => handleCopy(message.content)}
+        className="ml-2 text-gray-400 hover:text-white transition-colors duration-200"
+        title="Copy to clipboard"
+      >
+        <Copy size={16} />
+      </button>
     </div>
-    <button
-      onClick={() => handleCopy(message.content)}
-      className="ml-2 text-gray-400 hover:text-white transition-colors duration-200"
-      title="Copy to clipboard"
-    >
-      <Copy size={16} />
-    </button>
-  </div>
-)
+  )
+}
 
-const ChatInput = ({ userQuery, setUserQuery, handleSubmit, handleClearChat, isLoading, isMobile }) => {
+const ChatInput = ({ userQuery, setUserQuery, handleSubmit, handleClearChat, lineCount, isLoading, isMobile }) => {
   const textareaRef = useRef(null)
-  const [lineCount, setLineCount] = useState(0)
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -133,29 +154,7 @@ const ChatInput = ({ userQuery, setUserQuery, handleSubmit, handleClearChat, isL
       // Focus the textarea
       textareaRef.current.focus()
     }
-    updateLineCount()
   }, [userQuery])
-
-  const updateLineCount = () => {
-    if (textareaRef.current) {
-      const textarea = textareaRef.current
-      const text = textarea.value
-      const lines = text.split('\n')
-      const wrappedLines = Math.floor(textarea.scrollHeight / parseInt(getComputedStyle(textarea).lineHeight)-3)
-      setLineCount(Math.max(lines.length, wrappedLines))
-    }
-  }
-
-  const handleChange = (event) => {
-    setUserQuery(event.target.value)
-  }
-
-  const handlePaste = (event) => {
-    // Allow the default paste behavior
-    setTimeout(() => {
-      updateLineCount()
-    }, 0)
-  }
 
   const handleKeyDown = (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
@@ -167,8 +166,7 @@ const ChatInput = ({ userQuery, setUserQuery, handleSubmit, handleClearChat, isL
   const handleSubmitAndClear = (event) => {
     event.preventDefault()
     handleSubmit(event)
-    setUserQuery('')
-    setLineCount(0)
+    setUserQuery('')  // Clear the textarea immediately after submission
   }
 
   return (
@@ -176,8 +174,7 @@ const ChatInput = ({ userQuery, setUserQuery, handleSubmit, handleClearChat, isL
       <textarea
         ref={textareaRef}
         value={userQuery}
-        onChange={handleChange}
-        onPaste={handlePaste}
+        onChange={(e) => setUserQuery(e.target.value)}
         onKeyDown={handleKeyDown}
         className="w-full p-3 pb-12 rounded-md text-white bg-transparent border border-white border-opacity-30 focus:outline-none focus:ring-1 focus:ring-white focus:ring-opacity-50 resize-none overflow-y-auto scrollbar-hide"
         placeholder="Ask me anything..."
@@ -185,8 +182,7 @@ const ChatInput = ({ userQuery, setUserQuery, handleSubmit, handleClearChat, isL
         style={{
           maxHeight: 'calc(50vh - 40px)',
           scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-          lineHeight: '1.5'
+          msOverflowStyle: 'none'
         }}
         disabled={isLoading}
       />
@@ -349,13 +345,14 @@ export default function Csgpt() {
       navigate("/signup")
     }
     
-    const checkMobile = () => {
+    const checkMobile  = () => {
       setIsMobile(window.innerWidth <= 768)
     }
     
     checkMobile()
     window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', 
+    checkMobile)
   }, [navigate])
   
   useEffect(() => {
@@ -400,7 +397,7 @@ export default function Csgpt() {
     const currentQuery = userQuery
     setMessages((prevMessages) => [...prevMessages, { type: "user", content: currentQuery }])
     setIsLoading(true)
-    setShowSuggestions(false) 
+    setShowSuggestions(false)
     setUserQuery("")
     const token = localStorage.getItem("Token")
   
@@ -464,6 +461,7 @@ export default function Csgpt() {
       setLineCount(0)
     }
   }
+
   const handleShare = async () => {
     setPdfError(null)
   
@@ -529,6 +527,39 @@ export default function Csgpt() {
       })
   }
 
+  const handleSpeak = (content) => {
+    const plainText = content.replace(/```[\s\S]*?```/g, '').replace(/`/g, '')
+    const utterance = new SpeechSynthesisUtterance(plainText)
+  
+    // Function to set the male voice
+    const setMaleVoice = () => {
+      const voices = window.speechSynthesis.getVoices()
+      const maleVoice = voices.find(voice => 
+        voice.name.toLowerCase().includes('male') || 
+        (voice.name.includes('Google') && voice.lang.startsWith('en-') && !voice.name.toLowerCase().includes('female'))
+      )
+      if (maleVoice) {
+        utterance.voice = maleVoice
+      } else {
+        // If no male voice is found, adjust pitch to simulate a male voice
+        utterance.pitch = 0.8
+      }
+    }
+
+    // Set voice immediately if voices are already loaded
+    setMaleVoice()
+
+    // If voices haven't loaded yet, wait for them
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = setMaleVoice
+    }
+
+    // Adjust rate for a natural tone
+    utterance.rate = 0.9
+
+    window.speechSynthesis.speak(utterance)
+  }
+
   const convertMarkdownToPlainText = (markdown) => {
     let text = markdown.replace(/#{1,6}\s?/g, '')
     text = text.replace(/(\*\*|__)(.*?)\1/g, '$2')
@@ -549,6 +580,8 @@ export default function Csgpt() {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800 flex flex-col">
       <div className="absolute inset-0 z-0">
+        <ShootingStars />
+        <StarsBackground />
       </div>
       
       <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col h-screen">
@@ -560,7 +593,7 @@ export default function Csgpt() {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {messages.map((message, index) => (
-              <ChatMessage key={index} message={message} handleCopy={handleCopy} />
+              <ChatMessage key={index} message={message} handleCopy={handleCopy} handleSpeak={handleSpeak} />
             ))}
             {isLoading && (
               <div className="flex justify-center items-center space-x-2">
