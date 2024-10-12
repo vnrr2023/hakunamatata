@@ -1,6 +1,4 @@
 import React, { useState, useRef, useEffect } from "react"
-import { ShootingStars } from "../components/ui/shooting-stars"
-import { StarsBackground } from "../components/ui/stars-background"
 import ReactMarkdown from 'react-markdown'
 import { Cover } from "../components/ui/cover"
 import { Link } from "react-router-dom"
@@ -151,7 +149,6 @@ const ChatInput = ({ userQuery, setUserQuery, handleSubmit, handleClearChat, lin
       const newHeight = Math.min(textareaRef.current.scrollHeight, window.innerHeight / 4)
       textareaRef.current.style.height = `${newHeight}px`
       
-      // Focus the textarea
       textareaRef.current.focus()
     }
   }, [userQuery])
@@ -166,7 +163,7 @@ const ChatInput = ({ userQuery, setUserQuery, handleSubmit, handleClearChat, lin
   const handleSubmitAndClear = (event) => {
     event.preventDefault()
     handleSubmit(event)
-    setUserQuery('')  // Clear the textarea immediately after submission
+    setUserQuery('')  
   }
 
   return (
@@ -419,7 +416,6 @@ export default function Csgpt() {
   
       const data = await response.json()
   
-      console.log("Server response:", JSON.stringify(data, null, 2))
   
       if (!data || typeof data !== 'object') {
         throw new Error("Invalid response format: Response is not an object")
@@ -531,7 +527,6 @@ export default function Csgpt() {
     const plainText = content.replace(/```[\s\S]*?```/g, '').replace(/`/g, '')
     const utterance = new SpeechSynthesisUtterance(plainText)
   
-    // Function to set the male voice
     const setMaleVoice = () => {
       const voices = window.speechSynthesis.getVoices()
       const maleVoice = voices.find(voice => 
@@ -541,20 +536,16 @@ export default function Csgpt() {
       if (maleVoice) {
         utterance.voice = maleVoice
       } else {
-        // If no male voice is found, adjust pitch to simulate a male voice
         utterance.pitch = 0.8
       }
     }
 
-    // Set voice immediately if voices are already loaded
     setMaleVoice()
 
-    // If voices haven't loaded yet, wait for them
     if (speechSynthesis.onvoiceschanged !== undefined) {
       speechSynthesis.onvoiceschanged = setMaleVoice
     }
 
-    // Adjust rate for a natural tone
     utterance.rate = 0.9
 
     window.speechSynthesis.speak(utterance)
@@ -580,8 +571,6 @@ export default function Csgpt() {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800 flex flex-col">
       <div className="absolute inset-0 z-0">
-        <ShootingStars />
-        <StarsBackground />
       </div>
       
       <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col h-screen">
