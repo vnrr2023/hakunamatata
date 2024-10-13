@@ -209,7 +209,9 @@ export default function Hero() {
     "Data Warehouse Mining",
     "Internet Of Things",
     "Mobile Computing",
-    "Cryptography and System Security"
+    "Cryptography and System Security",
+    "Big data analytics", 
+    "Machine learning",
   ];
 
   const subjectColors = [
