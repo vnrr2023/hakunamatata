@@ -8,6 +8,7 @@ export default function Navbar() {
         { name: 'Home', link: '/' },
         { name: 'CSGPT', link: '/csgpt' },
         { name: 'Get Started', link: '/csgpt' },
+        { name: 'Subjects', link: '/subjects' },
     ]
 
     const [isOpen, setIsOpen] = useState(false)
