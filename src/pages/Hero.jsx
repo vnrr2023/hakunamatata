@@ -223,6 +223,8 @@ export default function Hero() {
     'from-amber-200 to-orange-200',
     'from-red-200 to-pink-200',
     'from-fuchsia-200 to-purple-200',
+    'from-violet-200 to-blue-200',
+    'from-amber-200 to-orange-200',
     'from-violet-200 to-blue-200'
   ];
 
