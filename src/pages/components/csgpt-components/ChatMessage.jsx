@@ -4,6 +4,7 @@ import { Copy, Volume2, ThumbsUp, ThumbsDown } from "lucide-react"
 
 const ChatMessage = ({ message, handleCopy, handleSpeak, isLoading, handleFeedback }) => {
   const [isSpeaking, setIsSpeaking] = useState(false)
+  const [feedbackGiven, setFeedbackGiven] = useState(false)
 
   const toggleSpeak = () => {
     if (isSpeaking) {
@@ -56,20 +57,34 @@ const ChatMessage = ({ message, handleCopy, handleSpeak, isLoading, handleFeedba
                 <Volume2 size={14} className="mr-1" />
                 {isSpeaking ? "Stop" : "Read aloud"}
               </button>
-              <button
-                onClick={() => handleFeedback(1)}
-                className="text-gray-400 hover:text-white transition-colors duration-200 opacity-70 text-sm flex items-center mr-2"
-                title="Like"
-              >
-                <ThumbsUp size={14} className="mr-1" />
-              </button>
-              <button
-                onClick={() => handleFeedback(0)}
-                className="text-gray-400 hover:text-white transition-colors duration-200 opacity-70 text-sm flex items-center"
-                title="Dislike"
-              >
-                <ThumbsDown size={14} className="mr-1" />
-              </button>
+              {feedbackGiven ? (
+                <span className="text-green-500 text-sm">Thank you for your feedback!</span>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      handleFeedback(1)
+                      setFeedbackGiven(true)
+                    }}
+                    className="text-gray-400 hover:text-white transition-colors duration-200 opacity-70 text-sm flex items-center mr-2"
+                    title="Like"
+                    disabled={feedbackGiven}
+                  >
+                    <ThumbsUp size={14} className="mr-1" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleFeedback(0)
+                      setFeedbackGiven(true)
+                    }}
+                    className="text-gray-400 hover:text-white transition-colors duration-200 opacity-70 text-sm flex items-center"
+                    title="Dislike"
+                    disabled={feedbackGiven}
+                  >
+                    <ThumbsDown size={14} className="mr-1" />
+                  </button>
+                </>
+              )}
             </div>
           </>
         ) : message.type === "error" ? (
