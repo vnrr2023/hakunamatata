@@ -281,54 +281,57 @@ const PopupWarning = ({ showPopup, setShowPopup }) => (
   )
 )
 
-const ShareOptions = ({ chatHistory, closeSharingOptions }) => {
+const ShareOptions = ({ pdfBlob, messages, closeSharingOptions }) => {
   const handleEmailShare = () => {
-    const emailSubject = encodeURIComponent("CSGPT Chat History")
-    const emailBody = encodeURIComponent(chatHistory)
-    const emailUrl = `mailto:?subject=${emailSubject}&body=${emailBody}`
-    window.open(emailUrl)
+    const emailBody = messages
+      .map(msg => `${msg.type.toUpperCase()}: ${msg.content}`)
+      .join('\n\n');
+    const emailUrl = `mailto:?subject=CSGPT Chat History&body=${encodeURIComponent(emailBody)}`;
+    window.open(emailUrl);
   }
 
   const handleWhatsAppShare = () => {
-    const whatsappText = encodeURIComponent(chatHistory)
-    const whatsappUrl = `https://wa.me/?text=${whatsappText}`
-    window.open(whatsappUrl, '_blank')
+    const whatsappText = messages
+      .map(msg => `${msg.type.toUpperCase()}: ${msg.content}`)
+      .join('\n\n');
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
+    window.open(whatsappUrl, '_blank');
   }
+
   const handleLocalSave = () => {
-    const blob = new Blob([chatHistory], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = 'csgpt-chat-history.pdf'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-    closeSharingOptions()
+    const url = URL.createObjectURL(pdfBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'csgpt-chat-history.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    closeSharingOptions();
   }
-  
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
       <div className="bg-gray-800 p-6 rounded-lg shadow-xl">
-        <h2 className="text-xl font-bold mb-4 text-white">Share or Save PDF</h2>
+        <h2 className="text-xl font-bold mb-4 text-white">Share or Save Chat</h2>
         <div className="space-y-4">
           <button
             onClick={handleEmailShare}
             className="w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors duration-200 flex items-center justify-center"
           >
-            <Mail className="mr-2" /> Share via Email
+            <Mail className="mr-2" /> Share via Email (Text)
           </button>
           <button
             onClick={handleWhatsAppShare}
             className="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-200 flex items-center justify-center"
           >
-            <Share2 className="mr-2" /> Share via WhatsApp
+            <Share2 className="mr-2" /> Share via WhatsApp (Text)
           </button>
           <button
             onClick={handleLocalSave}
             className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center"
           >
-            <Download className="mr-2" /> Save Locally
+            <Download className="mr-2" /> Save PDF Locally
           </button>
         </div>
         <button
@@ -354,7 +357,6 @@ export default function Csgpt() {
   const messagesEndRef = useRef(null)
   const chatContainerRef = useRef(null)
   const [pdfBlob, setPdfBlob] = useState(null)
-  const [chatHistory, setChatHistory] = useState("")
   const [pdfError, setPdfError] = useState(null)
   const [showSharingOptions, setShowSharingOptions] = useState(false)
   const [speechSynthesis, setSpeechSynthesis] = useState(null)
@@ -507,40 +509,15 @@ export default function Csgpt() {
   }
 
   const handleShare = async () => {
-    setPdfError(null)
-      
-    const history2 = messages.reduce((acc, message) => {
-        if (message.type === "user") {
-          acc += `Q: ${message.content}\n\n`
-        } else if (message.type === "ai") {
-          acc += `A: ${convertMarkdownToPlainText(message.content)}\n\n`
-        }
-        return acc
-      }, "CSGPT Chat History\n\n")
-  
-      setChatHistory(history2)
-      setShowSharingOptions(true)
- 
-    const history = messages.reduce((acc, message, index, array) => {
-      if (message.type === "user") {
-        acc.push({
-          question: message.content,
-          answer: array[index + 1]?.content || ""
-        })
-      }
-      return acc
-    }, [])
+    setPdfError(null);
   
     const MyDocument = () => (
       <Document>
         <Page size="A4" style={styles.page}>
           <Text style={styles.title}>CSGPT Chat History</Text>
-          {history.map((item, index) => (
+          {messages.map((message, index) => (
             <View key={index} style={styles.questionAnswer}>
-              <Text style={styles.question}>Q: {item.question}</Text>
-              <Text style={styles.answer}>
-                A: {convertMarkdownToPlainText(item.answer)}
-              </Text>
+              <Text style={styles.question}>{message.type.toUpperCase()}: {message.content}</Text>
             </View>
           ))}
           <Text style={styles.footer}>This response is generated by CSGPT AI</Text>
@@ -549,25 +526,22 @@ export default function Csgpt() {
     )
   
     try {
-      console.log("Starting PDF generation...")
-      console.log("PDF generated successfully")
-      setShowSharingOptions(true)
+      console.log("Starting PDF generation...");
+      const blob = await pdf(<MyDocument />).toBlob();
+      console.log("PDF generated successfully");
+      setPdfBlob(blob);
+      setShowSharingOptions(true);
     } catch (error) {
-      console.error("Error generating PDF:", error)
-      setPdfError("There was an error generating the PDF. Please try again.")
+      console.error("Error generating PDF:", error);
+      setPdfError("There was an error generating the PDF. Please try again.");
     }
   }
+
   const closeSharingOptions = () => {
     setShowSharingOptions(false)
-    setChatHistory("")
+    setPdfBlob(null)
+    setPdfError(null)
   }
-
-
-  // const closeSharingOptions = () => {
-  //   setShowSharingOptions(false)
-  //   setPdfBlob(null)
-  //   setPdfError(null)
-  // }
 
   const handleClearChat = () => {
     setMessages([])
@@ -751,8 +725,8 @@ export default function Csgpt() {
           </form>
         </div>
         {showSharingOptions && (
-          <ShareOptions pdfBlob={pdfBlob} closeSharingOptions={closeSharingOptions} />
-        )}
+  <ShareOptions pdfBlob={pdfBlob} messages={messages} closeSharingOptions={closeSharingOptions} />
+)}
         {pdfError && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
             <div className="bg-gray-800 p-6 rounded-lg shadow-xl">
