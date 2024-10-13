@@ -6,7 +6,7 @@ import Footer from './pages/components/Footer';
 import Csgpt from './pages/components/csgpt-components/Csgpt';
 import About from './pages/About';
 import Pricing from './pages/Pricing';
-import Hero from './pages/Hero';
+import Hero from './pages/components/hero-components/Hero';
 import SignUp from './pages/SignUp';
 import Subjects from './pages/Subjects';
 

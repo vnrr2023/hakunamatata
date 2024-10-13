@@ -38,9 +38,9 @@ export default function Csgpt() {
   
   useEffect(() => {
     const user = localStorage.getItem("Token")
-    // if (!user) {
-    //   navigate("/signup")
-    // }
+    if (!user) {
+      navigate("/signup")
+    }
     
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768)
