@@ -3,7 +3,7 @@ import './App.css';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './pages/components/Navbar';
 import Footer from './pages/components/Footer';
-import Csgpt from './pages/Csgpt';
+import Csgpt from './pages/components/csgpt-components/Csgpt';
 import About from './pages/About';
 import Pricing from './pages/Pricing';
 import Hero from './pages/Hero';
