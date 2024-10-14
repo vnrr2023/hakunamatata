@@ -23,7 +23,6 @@ export default function Hero() {
     "Mobile Computing",
     "Cryptography and System Security",
     "Big data analytics", 
-    "Machine learning",
   ];
 
   const subjectColors = [
