@@ -44,10 +44,7 @@ const subjects = [
       name: "Big Data Analytics",
       insight: "The process of examining large and complex datasets to uncover hidden patterns, correlations, and insights, using advanced analytical techniques to support data-driven decision-making."
     },
-    {
-      name: "Machine Learning",
-      insight: "A branch of artificial intelligence that focuses on developing algorithms and statistical models that enable systems to learn from and make predictions or decisions based on data."
-    }
+  
   ];
   
 
