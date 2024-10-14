@@ -7,8 +7,8 @@ import ChatMessage from "./ChatMessage"
 import ChatInput from "./ChatInput"
 import Suggestions from "./Suggestions"
 import PopupWarning from "./PopupWarning"
-import ShareOptions from "./ShareOptions"
-import { generatePDF } from "./pdfGenerator"
+// import ShareOptions from "./ShareOptions"
+// import { generatePDF } from "./pdfGenerator"
 
 export default function Csgpt() {
   const [userQuery, setUserQuery] = useState("")
@@ -21,9 +21,9 @@ export default function Csgpt() {
   const [showPopup, setShowPopup] = useState(false)
   const messagesEndRef = useRef(null)
   const chatContainerRef = useRef(null)
-  const [pdfBlob, setPdfBlob] = useState(null)
-  const [pdfError, setPdfError] = useState(null)
-  const [showSharingOptions, setShowSharingOptions] = useState(false)
+  // const [pdfBlob, setPdfBlob] = useState(null)
+  // const [pdfError, setPdfError] = useState(null)
+  // const [showSharingOptions, setShowSharingOptions] = useState(false)
   const [speechSynthesis, setSpeechSynthesis] = useState(null)
   const [voices, setVoices] = useState([])
   const [currentlySpeaking, setCurrentlySpeaking] = useState(null)
@@ -172,23 +172,23 @@ export default function Csgpt() {
     }
   }
 
-  const handleShare = async () => {
-    setPdfError(null)
-    try {
-      const blob = await generatePDF(messages)
-      setPdfBlob(blob)
-      setShowSharingOptions(true)
-    } catch (error) {
-      console.error("Error generating PDF:", error)
-      setPdfError("There was an error generating the PDF. Please try again.")
-    }
-  }
+  // const handleShare = async () => {
+  //   setPdfError(null)
+  //   try {
+  //     const blob = await generatePDF(messages)
+  //     setPdfBlob(blob)
+  //     setShowSharingOptions(true)
+  //   } catch (error) {
+  //     console.error("Error generating PDF:", error)
+  //     setPdfError("There was an error generating the PDF. Please try again.")
+  //   }
+  // }
 
-  const closeSharingOptions = () => {
-    setShowSharingOptions(false)
-    setPdfBlob(null)
-    setPdfError(null)
-  }
+  // const closeSharingOptions = () => {
+  //   setShowSharingOptions(false)
+  //   setPdfBlob(null)
+  //   setPdfError(null)
+  // }
 
   const handleClearChat = () => {
     setMessages([])
@@ -288,7 +288,8 @@ export default function Csgpt() {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800 flex flex-col">
       <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col h-screen">
-        <Header messages={messages} handleShare={handleShare} />
+        {/* <Header messages={messages} handleShare={handleShare} /> */}
+        <Header messages={messages}/>
         <div className="flex-grow overflow-hidden flex flex-col">
           <div 
             ref={chatContainerRef} 
@@ -345,7 +346,7 @@ export default function Csgpt() {
             <span className="text-gray-400 mt-2 text-center">CSGPT can only give answers from relevant books.</span>
           </form>
         </div>
-        {showSharingOptions && (
+        {/* {showSharingOptions && (
           <ShareOptions pdfBlob={pdfBlob} messages={messages} closeSharingOptions={closeSharingOptions} />
         )}
         {pdfError && (
@@ -361,7 +362,7 @@ export default function Csgpt() {
               </button>
             </div>
           </div>
-        )}
+        )} */}
       </div>
 
       <PopupWarning showPopup={showPopup} setShowPopup={setShowPopup} />
