@@ -61,7 +61,7 @@ export default function SignUp() {
         navigate("/csgpt")
       })
       .catch(err => {
-        console.error("Error in Google login: ", err)
+        console.error("Error in Google login")
         setError("An unexpected error occurred. Please try again.")
       })
       .finally(() => {

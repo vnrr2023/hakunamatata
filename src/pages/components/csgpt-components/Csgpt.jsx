@@ -8,6 +8,7 @@ import ChatInput from "./ChatInput"
 import Suggestions from "./Suggestions"
 import PopupWarning from "./PopupWarning"
 import Watermark from "./Watermark"
+
 export default function Csgpt() {
   const [userQuery, setUserQuery] = useState("")
   const [messages, setMessages] = useState([])
@@ -112,6 +113,20 @@ export default function Csgpt() {
     const token = localStorage.getItem("Token")
   
     try {
+      const mergedMessages = messages.reduce((acc, message, index, array) => {
+        if (message.type === "user") {
+          const nextMessage = array[index + 1]
+          if (nextMessage && (nextMessage.type === "ai" || nextMessage.type === "error")) {
+            acc.push({
+              question: message.content,
+              answer: nextMessage.content
+            })
+          }
+        }
+        return acc
+      }, [])
+
+      const last5Messages = mergedMessages.slice(-5)
       const response = await fetch(`${google_ngrok_url}/app/query/`, {
         method: "POST",
         headers: {
@@ -119,22 +134,19 @@ export default function Csgpt() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ 
-          "question": currentQuery
+          "question": currentQuery,
+          "history": last5Messages
         }),
       })
   
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error("NetworkError")
       }
   
       const data = await response.json()
   
-      if (!data || typeof data !== 'object') {
-        throw new Error("Invalid response format: Response is not an object")
-      }
-  
-      if (!data.hasOwnProperty('server_status') || !data.hasOwnProperty('data')) {
-        throw new Error("Invalid response format: Missing required fields")
+      if (!data || typeof data !== 'object' || !data.hasOwnProperty('server_status') || !data.hasOwnProperty('data')) {
+        throw new Error("InvalidResponse")
       }
   
       if (data.server_status === true) {
@@ -153,16 +165,25 @@ export default function Csgpt() {
             })
           }
         } else {
-          throw new Error("Invalid response format: 'data' field is not a string")
+          throw new Error("InvalidResponse")
         }
       } else if (data.server_status === false) {
-        throw new Error(`Server error: ${data.data}`)
+        throw new Error("ServerError")
       } else {
-        throw new Error("Invalid response format: Unexpected server_status value")
+        throw new Error("UnexpectedError")
       }
     } catch (error) {
       console.error("Error:", error)
-      let errorMessage = `Sorry, there was an error processing your request: ${error.message}`
+      let errorMessage = "Sorry, we couldn't process your request. Please try again later."
+      
+      if (error.message === "NetworkError") {
+        errorMessage = "We're having trouble connecting. Please check your internet and try again."
+      } else if (error.message === "InvalidResponse") {
+        errorMessage = "We received an unexpected response. Our team has been notified."
+      } else if (error.message === "ServerError") {
+        errorMessage = "Our system is experiencing some issues. Please try again later."
+      }
+      
       setMessages((prevMessages) => [...prevMessages, { type: "error", content: errorMessage }])
     } finally {
       setIsLoading(false)
