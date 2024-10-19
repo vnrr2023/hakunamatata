@@ -127,6 +127,7 @@ export default function Csgpt() {
       }, [])
 
       const last5Messages = mergedMessages.slice(-5)
+      await new Promise(resolve => setTimeout(resolve, 7000));
       const response = await fetch(`${google_ngrok_url}/app/query/`, {
         method: "POST",
         headers: {
