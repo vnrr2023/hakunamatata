@@ -8,6 +8,9 @@ import ChatInput from "./ChatInput"
 import Suggestions from "./Suggestions"
 import PopupWarning from "./PopupWarning"
 import Watermark from "./Watermark"
+import ShareOptions from "./ShareOptions"
+import { generatePDF } from "./pdfGenerator"
+
 
 export default function Csgpt() {
   const [userQuery, setUserQuery] = useState("")
@@ -24,7 +27,9 @@ export default function Csgpt() {
   const [speechSynthesis, setSpeechSynthesis] = useState(null)
   const [voices, setVoices] = useState([])
   const [currentlySpeaking, setCurrentlySpeaking] = useState(null)
-
+  const [pdfBlob, setPdfBlob] = useState(null)
+  const [pdfError, setPdfError] = useState(null)
+  const [showSharingOptions, setShowSharingOptions] = useState(false)
   const suggestions = [
     "Explain DNS with text diagram.",
     "What is computer science?",
@@ -127,7 +132,7 @@ export default function Csgpt() {
       }, [])
 
       const last5Messages = mergedMessages.slice(-5)
-      await new Promise(resolve => setTimeout(resolve, 7000));
+      // await new Promise(resolve => setTimeout(resolve, 7000));
       const response = await fetch(`${google_ngrok_url}/app/query/`, {
         method: "POST",
         headers: {
@@ -287,11 +292,27 @@ export default function Csgpt() {
       console.error("Error sending feedback:", error)
     }
   }
+ const handleShare = async () => {
+    setPdfError(null)
+    try {
+      const blob = await generatePDF(messages)
+      setPdfBlob(blob)
+      setShowSharingOptions(true)
+    } catch (error) {
+      console.error("Error generating PDF:", error)
+      setPdfError("There was an error generating the PDF. Please try again.")
+    }
+  }
 
+  const closeSharingOptions = () => {
+    setShowSharingOptions(false)
+    setPdfBlob(null)
+    setPdfError(null)
+  }
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-black via-neutral-900 to-neutral-800 flex flex-col">
       <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col h-screen">
-        <Header messages={messages}/>
+        <Header messages={messages} handleShare={handleShare} />
         <div className="flex-grow overflow-hidden flex flex-col">
           <div 
             ref={chatContainerRef} 
@@ -350,7 +371,23 @@ export default function Csgpt() {
           </form>
         </div>
       </div>
-
+            {showSharingOptions && (
+          <ShareOptions pdfBlob={pdfBlob} messages={messages} closeSharingOptions={closeSharingOptions} />
+        )}
+        {pdfError && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+            <div className="bg-gray-800 p-6 rounded-lg shadow-xl">
+              <h2 className="text-xl font-bold mb-4 text-red-500">Error</h2>
+              <p className="text-white">{pdfError}</p>
+              <button
+                onClick={() => setPdfError(null)}
+                className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-200"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       <PopupWarning showPopup={showPopup} setShowPopup={setShowPopup} />
     </div>
   )
