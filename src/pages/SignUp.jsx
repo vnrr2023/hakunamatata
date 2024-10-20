@@ -5,7 +5,7 @@ import { StarsBackground } from "../components/ui/stars-background"
 import { motion } from "framer-motion"
 import { useNavigate } from "react-router-dom"
 
-export const google_ngrok_url = "https://1d98-43-231-238-206.ngrok-free.app"
+export const google_ngrok_url = "https://3dc0-106-222-206-122.ngrok-free.app"
 
 
 export default function SignUp() {
